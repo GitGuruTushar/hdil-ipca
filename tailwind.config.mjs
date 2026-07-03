@@ -1,5 +1,3 @@
-import { Space_Grotesk } from 'next/font/google';
-
 /** @type {import('tailwindcss').Config} */
 export default {
     darkMode: ["class"],
@@ -11,6 +9,26 @@ export default {
   theme: {
   	extend: {
   		colors: {
+  			/* HDIL-IPCA site palette v3 (Glass Serenity) — hex literals so
+  			   opacity modifiers (bg-ink/95, text-white/60) work. Keep in
+  			   sync with --site-* in globals.css.
+  			   madder = primary accent (indigo), alarm = emergency red. */
+  			ivory: '#EEF2F7',
+  			surface: '#FFFFFF',
+  			ink: '#171B26',
+  			body: '#525A6B',
+  			line: '#DFE5EE',
+  			madder: {
+  				DEFAULT: '#4F46E2',
+  				deep: '#4338CA'
+  			},
+  			grape: '#7C3AED',
+  			alarm: {
+  				DEFAULT: '#DC2626',
+  				deep: '#B91C1C'
+  			},
+  			ok: '#10B981',
+  			/* shadcn tokens — used by admin/dashboard */
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -53,10 +71,16 @@ export default {
   			}
   		},
   		fontFamily: {
-  			bevan: [
-  				'Bevan',
-  				'serif'
-  			]
+  			display: ['var(--font-display)', 'Georgia', 'serif'],
+  			sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+  			bevan: ['Bevan', 'serif']
+  		},
+  		maxWidth: {
+  			site: '85rem'
+  		},
+  		transitionTimingFunction: {
+  			'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+  			'out-quint': 'cubic-bezier(0.22, 1, 0.36, 1)'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

@@ -1,19 +1,29 @@
-import Image from "next/image";
-import IPAC from "./components/home/ipac";
-import Contactus from "./components/home/contactus";
-import Hero from "./components/home/hero";
-import Gallery from "./components/home/gallery";
-import Heading from "./components/heading";
+import HomeHero from "@/components/site/home/hero";
+import {
+  StatsBand,
+  Intro,
+  IndustriesMarquee,
+  NewsTeaser,
+  GalleryTeaser,
+  HelplineStrip,
+} from "@/components/site/home/sections";
+import { site } from "@/content/site";
+
+export const metadata = {
+  title: "HDIL-IPCA — HDIL Industrial Park, Virar (East)",
+  description: site.home.hero.sub,
+};
 
 export default function Home() {
   return (
-    <div >
-       <Hero/>
-      <Heading heading={"About us"} route={"/about"}/>
-      <IPAC/>
-      <Gallery/>
-      <Heading heading={"Contact us"} route={"/contact"}/>
-      <Contactus/>
-    </div>
+    <>
+      <HomeHero />
+      <StatsBand />
+      <Intro />
+      <IndustriesMarquee />
+      <NewsTeaser />
+      <GalleryTeaser />
+      <HelplineStrip />
+    </>
   );
 }

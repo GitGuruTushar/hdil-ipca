@@ -1,32 +1,40 @@
-@import url('https://fonts.googleapis.com/css2?family=Bevan:ital@0;1&family=Montserrat+Subrayada:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+PT+Guides&family=Space+Grotesk:wght@300..700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-.bevan-regular {
-  font-family: "Bevan", serif;
-  font-weight: 400;
-  font-style: normal;
-}
-.space-grotesk {
-  font-family: "Space Grotesk", serif;
-  font-weight: 400;
-}
-.montserrat-subrayada-bold {
-  font-family: "Montserrat Subrayada", serif;
-  font-weight: 700;
-  font-style: normal;
+
+/* ------------------------------------------------------------------ */
+/* HDIL-IPCA site design tokens — v3 "Glass Serenity"                  */
+/* Soft tinted base, frosted glass surfaces, indigo accent,            */
+/* emergency red kept exclusively for the helpline.                    */
+/* ------------------------------------------------------------------ */
+:root {
+  --site-ivory: #eef2f7; /* page base */
+  --site-surface: #ffffff;
+  --site-ink: #171b26;
+  --site-body: #525a6b;
+  --site-line: #dfe5ee;
+  --site-accent: #4f46e2; /* indigo */
+  --site-accent-deep: #4338ca;
+  --site-alarm: #dc2626; /* emergency red — helpline only */
+  --site-ok: #10b981;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-micro: 180ms;
+  --dur-reveal: 450ms;
+  --dur-route: 220ms;
 }
 
-.montserrat{
-  font-family: "Montserrat", serif;
-  font-optical-sizing: auto;
-  font-style: normal;
+html {
+  background-color: var(--site-ivory);
 }
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+::selection {
+  background: #4f46e2;
+  color: #ffffff;
 }
 
+/* Old shadcn tokens — kept intact for admin/dashboard (Phase 2) */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -89,5 +97,157 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Site utilities                                                      */
+/* ------------------------------------------------------------------ */
+
+/* Frosted glass surface. Mobile gets a near-opaque white (cheap),
+   desktop gets the true backdrop blur. */
+.glass {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+@media (min-width: 768px) {
+  .glass {
+    background: rgba(255, 255, 255, 0.66);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+}
+.glass-soft {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+@media (min-width: 768px) {
+  .glass-soft {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+}
+
+/* Soft elevation for glass cards */
+.glass-shadow {
+  box-shadow: 0 18px 44px -18px rgba(23, 27, 38, 0.18);
+}
+.hover-lift {
+  transition:
+    transform var(--dur-micro) var(--ease-out-quint),
+    box-shadow var(--dur-micro) var(--ease-out-quint);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 26px 54px -20px rgba(23, 27, 38, 0.24);
+  }
+}
+
+/* Gradient text for the highlighted headline word */
+.text-gradient {
+  background: linear-gradient(90deg, #4f46e2, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Gentle ambient float for the hero glass frame */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+.float-soft {
+  animation: float-soft 5.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Slow drift for the background tint blobs */
+@keyframes drift-a {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(40px, 28px);
+  }
+}
+@keyframes drift-b {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(-36px, -24px);
+  }
+}
+.drift-a {
+  animation: drift-a 22s ease-in-out infinite alternate;
+}
+.drift-b {
+  animation: drift-b 26s ease-in-out infinite alternate;
+}
+
+/* Underline-slide link */
+.link-wipe {
+  position: relative;
+  display: inline-block;
+}
+.link-wipe::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1.5px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-micro) var(--ease-out-quint);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-wipe:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/* Marquee ticker */
+@keyframes site-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: site-marquee 32s linear infinite;
+  will-change: transform;
+}
+.marquee-hover:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* Tap feedback on touch devices */
+@media (hover: none) {
+  .tap-shrink:active {
+    transform: scale(0.97);
+    transition: transform 120ms var(--ease-out-quint);
+  }
+}
+
+/* Accessibility: collapse all motion for users who ask for it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -1,14 +1,14 @@
 import { PageHero } from "@/components/site/ui";
-import NewsExplorer from "@/components/site/updates/news-explorer";
+import GalleryAlbums from "@/components/site/gallery/albums";
 import { site } from "@/content/site";
 
 export const metadata = {
-  title: "News & Updates",
-  description: site.news.hero.sub,
+  title: "Gallery",
+  description: site.gallery.hero.sub,
 };
 
-export default function UpdatesPage() {
-  const { hero } = site.news;
+export default function GalleryPage() {
+  const { hero } = site.gallery;
   return (
     <>
       <PageHero
@@ -17,7 +17,7 @@ export default function UpdatesPage() {
         titleEm={hero.titleEm}
         sub={hero.sub}
       />
-      <NewsExplorer />
+      <GalleryAlbums />
     </>
   );
 }
