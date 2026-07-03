@@ -10,6 +10,9 @@ const nextConfig = {
     basePath: "/hdil-ipca",
     trailingSlash: true,
   }),
+  env: {
+    NEXT_PUBLIC_BASE_PATH: isGithubPages ? "/hdil-ipca" : "",
+  },
   images: {
     unoptimized: isGithubPages,
     remotePatterns: [

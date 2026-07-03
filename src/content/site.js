@@ -22,6 +22,10 @@
 const u = (id, w = 1600) =>
   `https://images.unsplash.com/${id}?q=80&w=${w}&auto=format&fit=crop`;
 
+// Prefixes local assets with the deployment base path (GitHub Pages serves
+// the site under /hdil-ipca). Empty in dev and on Vercel.
+const bp = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const site = {
   brand: {
     name: "HDIL-IPCA",
@@ -29,7 +33,7 @@ export const site = {
     // [EDIT] Confirm the official full form of IPCA:
     fullForm: "HDIL Industrial Premises Co-operative Association",
     tagline: "Where industry meets community.",
-    logo: "/ipcalogo.png",
+    logo: `${bp}/ipcalogo.png`,
   },
 
   nav: [
@@ -79,7 +83,7 @@ export const site = {
       sub: "600+ businesses. One address. One voice.",
       primaryCta: { label: "Explore the federation", href: "/about" },
       secondaryCta: { label: "Emergency helpline", href: "/helpline" },
-      image: "/home/hero.jpg",
+      image: `${bp}/home/hero.jpg`,
       imageAlt: "Buildings of the HDIL Industrial Park with IPCA billboards",
     },
     intro: {

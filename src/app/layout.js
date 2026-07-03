@@ -21,7 +21,7 @@ export const metadata = {
   },
   description:
     "HDIL-IPCA is the federation of the HDIL Industrial Park, Chandansar, Virar (East) — uniting property owners, businesses and workers to build a thriving industrial community.",
-  icons: { icon: "/ipcalogo.png" },
+  icons: { icon: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/ipcalogo.png` },
   openGraph: {
     title: "HDIL-IPCA — HDIL Industrial Park, Virar (East)",
     description:
