@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const WorkshopSchema = new mongoose.Schema({
   title: {
@@ -30,6 +31,14 @@ const WorkshopSchema = new mongoose.Schema({
     ref: 'User'
   }],
   reminderSentAt: Date,
+  checkinCode: {
+    type: String,
+    default: () => crypto.randomBytes(4).toString('hex')
+  },
+  checkedInUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

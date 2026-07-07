@@ -27,6 +27,14 @@ const NoticeSchema = new mongoose.Schema({
   targetGala: {
     type: Number
   },
+  status: {
+    type: String,
+    enum: ['draft', 'scheduled', 'published'],
+    default: 'published'
+  },
+  publishAt: {
+    type: Date
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

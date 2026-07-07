@@ -62,7 +62,18 @@ const IndustrySchema = new mongoose.Schema({
   },
   images: [{
     type: String // General images related to the business
-  }]
+  }],
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  verifiedAt: {
+    type: Date
+  },
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Industry', IndustrySchema);

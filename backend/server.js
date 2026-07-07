@@ -5,7 +5,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
 const { createLogger, transports, format } = require('winston');
 
 require('./utils/cloudinary'); // configures the Cloudinary SDK as a side effect
@@ -41,10 +40,13 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '20kb' }));
 app.use(helmet());
 app.use(mongoSanitize());
-app.use(xss());
+// No blanket XSS-stripping middleware: React escapes plain string fields by
+// default, and rich-text fields (Update/Notice content) are sanitized with an
+// HTML allowlist at the point of saving via utils/sanitizeRichText.js instead
+// — xss-clean stripped legitimate formatting tags with no way to exempt fields.
 
 // --- Rate limiting ---
 const generalLimiter = rateLimit({
@@ -95,6 +97,14 @@ app.use('/api/vacancies', require('./routes/vacancies'));
 app.use('/api/gallery', require('./routes/gallery'));
 app.use('/api/feedback', require('./routes/feedback'));
 app.use('/api/contact', require('./routes/contact'));
+app.use('/api/site-content', require('./routes/siteContent'));
+app.use('/api/documents', require('./routes/documents'));
+app.use('/api/grievances', require('./routes/grievances'));
+app.use('/api/dues', require('./routes/dues'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/push', require('./routes/push'));
+app.use('/api/audit-log', require('./routes/auditLog'));
+app.use('/api/export', require('./routes/export'));
 
 // 404 for unknown API routes
 app.use('/api', (req, res) => {

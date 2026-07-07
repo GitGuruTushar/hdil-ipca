@@ -6,6 +6,8 @@ const Industry = require('../models/Industry');
 const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const sanitizeRichText = require('../utils/sanitizeRichText');
+const logAudit = require('../utils/auditLog');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -43,7 +45,15 @@ router.get(
     const galaNumbers = listings.map((l) => l.galaNumber);
     const occupancyTypes = listings.map((l) => l.occupancyType);
 
-    const notices = await Notice.find({ expiresAt: { $gt: new Date() } })
+    // Members never see drafts, and scheduled notices only once publishAt has passed —
+    // combined with the existing expiresAt/audience/building/gala targeting below.
+    const notices = await Notice.find({
+      expiresAt: { $gt: new Date() },
+      $and: [
+        { status: { $ne: 'draft' } },
+        { $or: [{ status: { $ne: 'scheduled' } }, { publishAt: { $lte: new Date() } }] }
+      ]
+    })
       .sort({ createdAt: -1 })
       .populate('createdBy', 'username fullName');
 
@@ -58,31 +68,48 @@ router.get(
   })
 );
 
+// @route   GET /api/notices/admin
+// @desc    Get every notice regardless of status/publishAt/expiresAt (drafts & scheduled included)
+// @access  Private (Admin/Moderator only)
+router.get(
+  '/admin',
+  protect,
+  authorize('admin', 'moderator'),
+  asyncHandler(async (req, res) => {
+    const notices = await Notice.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
+    res.json(notices);
+  })
+);
+
 const noticeFields = [
   check('title', 'Title is required').not().isEmpty(),
   check('content', 'Content is required').not().isEmpty(),
   check('expiresAt', 'A valid expiration date is required').isISO8601(),
-  check('targetAudience', 'Invalid target audience').optional().isIn(['everyone', 'owners', 'tenants'])
+  check('targetAudience', 'Invalid target audience').optional().isIn(['everyone', 'owners', 'tenants']),
+  check('status', 'Status must be draft, scheduled, or published').optional().isIn(['draft', 'scheduled', 'published']),
+  check('publishAt', 'publishAt must be a valid date').optional().isISO8601()
 ];
 
 // @route   POST /api/notices
-// @access  Private (Admin only)
+// @access  Private (Admin/Moderator only)
 router.post(
   '/',
   protect,
-  authorize('admin'),
+  authorize('admin', 'moderator'),
   noticeFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
-    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala } = req.body;
+    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt } = req.body;
 
     const notice = await Notice.create({
       title,
-      content,
+      content: sanitizeRichText(content),
       expiresAt,
       targetAudience,
       targetBuilding,
       targetGala,
+      status,
+      publishAt,
       createdBy: req.user.id
     });
 
@@ -91,22 +118,24 @@ router.post(
 );
 
 // @route   PUT /api/notices/:id
-// @access  Private (Admin only)
+// @access  Private (Admin/Moderator only)
 router.put(
   '/:id',
   protect,
-  authorize('admin'),
+  authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
     const notice = await Notice.findById(req.params.id);
     if (!notice) throw new AppError('Notice not found', 404);
 
-    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala } = req.body;
+    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt } = req.body;
     if (title !== undefined) notice.title = title;
-    if (content !== undefined) notice.content = content;
+    if (content !== undefined) notice.content = sanitizeRichText(content);
     if (expiresAt !== undefined) notice.expiresAt = expiresAt;
     if (targetAudience !== undefined) notice.targetAudience = targetAudience;
     if (targetBuilding !== undefined) notice.targetBuilding = targetBuilding;
     if (targetGala !== undefined) notice.targetGala = targetGala;
+    if (status !== undefined) notice.status = status;
+    if (publishAt !== undefined) notice.publishAt = publishAt;
 
     await notice.save();
     res.json(notice);
@@ -114,15 +143,16 @@ router.put(
 );
 
 // @route   DELETE /api/notices/:id
-// @access  Private (Admin only)
+// @access  Private (Admin/Moderator only)
 router.delete(
   '/:id',
   protect,
-  authorize('admin'),
+  authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
     const notice = await Notice.findById(req.params.id);
     if (!notice) throw new AppError('Notice not found', 404);
     await notice.deleteOne();
+    logAudit(req.user.id, 'deleted_notice', 'Notice', notice.id, { title: notice.title });
     res.json({ msg: 'Notice removed' });
   })
 );

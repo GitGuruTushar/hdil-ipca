@@ -25,6 +25,9 @@ const JobApplicationSchema = new mongoose.Schema({
   coverNote: {
     type: String,
     maxlength: [1000, 'Cover note can not be more than 1000 characters']
+  },
+  resumeUrl: {
+    type: String
   }
 }, { timestamps: true });
 

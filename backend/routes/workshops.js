@@ -6,6 +6,7 @@ const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const sendEmail = require('../utils/sendEmail');
+const logAudit = require('../utils/auditLog');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -34,11 +35,11 @@ router.get(
 );
 
 // @route   POST /api/workshops
-// @access  Private (Admin only)
+// @access  Private (Admin or Moderator)
 router.post(
   '/',
   protect,
-  authorize('admin'),
+  authorize('admin', 'moderator'),
   workshopFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
@@ -50,11 +51,11 @@ router.post(
 );
 
 // @route   PUT /api/workshops/:id
-// @access  Private (Admin only)
+// @access  Private (Admin or Moderator)
 router.put(
   '/:id',
   protect,
-  authorize('admin'),
+  authorize('admin', 'moderator'),
   workshopFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
@@ -70,15 +71,16 @@ router.put(
 );
 
 // @route   DELETE /api/workshops/:id
-// @access  Private (Admin only)
+// @access  Private (Admin or Moderator)
 router.delete(
   '/:id',
   protect,
-  authorize('admin'),
+  authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
     const workshop = await Workshop.findById(req.params.id);
     if (!workshop) throw new AppError('Workshop not found', 404);
     await workshop.deleteOne();
+    logAudit(req.user.id, 'deleted_workshop', 'Workshop', workshop.id, { title: workshop.title });
     res.json({ msg: 'Workshop removed' });
   })
 );
@@ -131,6 +133,90 @@ router.post(
       { new: true }
     );
     if (!workshop) throw new AppError('Workshop not found', 404);
+    res.json(workshop);
+  })
+);
+
+// @route   GET /api/workshops/:id/checkin-info
+// @desc    Returns the workshop's check-in code and the shareable check-in URL — encode this
+//          into a single QR code the organizer displays/prints at the venue; each attendee
+//          scans it on their own phone to self-check-in
+// @access  Private (Admin or Moderator)
+router.get(
+  '/:id/checkin-info',
+  protect,
+  authorize('admin', 'moderator'),
+  asyncHandler(async (req, res) => {
+    const workshop = await Workshop.findById(req.params.id);
+    if (!workshop) throw new AppError('Workshop not found', 404);
+
+    res.json({
+      checkinCode: workshop.checkinCode,
+      checkinUrl: `${process.env.FRONTEND_URL}/checkin/${workshop.id}/${workshop.checkinCode}`
+    });
+  })
+);
+
+// @route   POST /api/workshops/:id/checkin/:code
+// @desc    Self check-in — a member scans the shared QR code with their own phone. Walk-ins
+//          (never registered in advance) are allowed; this tracks attendance, not registration.
+// @access  Private (any logged-in member)
+router.post(
+  '/:id/checkin/:code',
+  protect,
+  asyncHandler(async (req, res) => {
+    const workshop = await Workshop.findById(req.params.id);
+    if (!workshop) throw new AppError('Workshop not found', 404);
+    if (workshop.checkinCode !== req.params.code) {
+      throw new AppError('Invalid check-in code', 400);
+    }
+
+    const updated = await Workshop.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { checkedInUsers: req.user.id } },
+      { new: true }
+    );
+
+    res.json(updated);
+  })
+);
+
+// @route   POST /api/workshops/:id/checkin-manual
+// @desc    Manual fallback for attendees without a smartphone or with connectivity issues —
+//          organizer looks up the person and marks them checked-in directly
+// @access  Private (Admin or Moderator)
+router.post(
+  '/:id/checkin-manual',
+  protect,
+  authorize('admin', 'moderator'),
+  [check('userId', 'A valid userId is required').isMongoId()],
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+
+    const workshop = await Workshop.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { checkedInUsers: req.body.userId } },
+      { new: true }
+    );
+    if (!workshop) throw new AppError('Workshop not found', 404);
+
+    res.json(workshop);
+  })
+);
+
+// @route   GET /api/workshops/:id/attendance
+// @desc    Compare who registered in advance vs who actually showed up
+// @access  Private (Admin or Moderator)
+router.get(
+  '/:id/attendance',
+  protect,
+  authorize('admin', 'moderator'),
+  asyncHandler(async (req, res) => {
+    const workshop = await Workshop.findById(req.params.id)
+      .populate('registeredUsers', 'username fullName email')
+      .populate('checkedInUsers', 'username fullName email');
+    if (!workshop) throw new AppError('Workshop not found', 404);
+
     res.json(workshop);
   })
 );

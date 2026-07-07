@@ -24,6 +24,14 @@ const UpdateSchema = new mongoose.Schema({
   },
   images: [String],
   videoUrl: String,
+  status: {
+    type: String,
+    enum: ['draft', 'scheduled', 'published'],
+    default: 'published'
+  },
+  publishAt: {
+    type: Date
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

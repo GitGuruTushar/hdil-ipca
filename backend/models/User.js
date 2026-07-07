@@ -38,7 +38,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['member', 'admin'],
+    enum: ['member', 'moderator', 'admin'],
     default: 'member'
   },
   // 'pending' = awaiting admin approval (self-registered), 'approved' = can log in,

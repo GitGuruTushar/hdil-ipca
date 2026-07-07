@@ -8,6 +8,7 @@ const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const sendEmail = require('../utils/sendEmail');
+const logAudit = require('../utils/auditLog');
 
 const signToken = (user) =>
   jwt.sign(
@@ -69,7 +70,7 @@ router.post(
   '/register',
   protect,
   authorize('admin'),
-  [...registerFields, check('role', 'Role must be member or admin').optional().isIn(['member', 'admin'])],
+  [...registerFields, check('role', 'Role must be member, moderator, or admin').optional().isIn(['member', 'moderator', 'admin'])],
   asyncHandler(async (req, res) => {
     runValidation(req);
     const { username, fullName, email, password, phone, role } = req.body;
@@ -118,6 +119,7 @@ router.put(
     if (!user) throw new AppError('User not found', 404);
     user.status = 'approved';
     await user.save();
+    logAudit(req.user.id, 'approved_member', 'User', user.id);
     res.json({ msg: 'User approved', user });
   })
 );
@@ -136,6 +138,7 @@ router.put(
       throw new AppError('Only pending accounts can be rejected', 400);
     }
     await user.deleteOne();
+    logAudit(req.user.id, 'rejected_member', 'User', user.id, { email: user.email });
     res.json({ msg: 'Registration rejected' });
   })
 );
@@ -155,6 +158,7 @@ router.put(
     }
     user.status = user.status === 'disabled' ? 'approved' : 'disabled';
     await user.save();
+    logAudit(req.user.id, user.status === 'disabled' ? 'disabled_member' : 'reenabled_member', 'User', user.id);
     res.json({ msg: `User ${user.status}`, user });
   })
 );
@@ -313,6 +317,7 @@ router.delete(
     const user = await User.findById(req.params.id);
     if (!user) throw new AppError('User not found', 404);
     await user.deleteOne();
+    logAudit(req.user.id, 'deleted_member', 'User', user.id, { email: user.email });
     res.json({ msg: 'User deleted' });
   })
 );

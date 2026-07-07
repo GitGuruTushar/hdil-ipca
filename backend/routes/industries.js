@@ -7,6 +7,7 @@ const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const cloudinary = require('../utils/cloudinary');
+const logAudit = require('../utils/auditLog');
 const { upload, enforceSizeLimits } = require('../config/upload');
 
 const runValidation = (req) => {
@@ -164,7 +165,34 @@ router.delete(
     }
 
     await industry.deleteOne();
+    logAudit(req.user.id, 'deleted_industry', 'Industry', industry.id, { name: industry.name });
     res.json({ msg: 'Business listing removed' });
+  })
+);
+
+// @route   PUT /api/industries/:id/verify
+// @desc    Toggle the verified-business badge on a listing
+// @access  Private (Admin/Moderator only)
+router.put(
+  '/:id/verify',
+  protect,
+  authorize('admin', 'moderator'),
+  asyncHandler(async (req, res) => {
+    const industry = await Industry.findById(req.params.id);
+    if (!industry) throw new AppError('Business listing not found', 404);
+
+    industry.verified = !industry.verified;
+    if (industry.verified) {
+      industry.verifiedAt = new Date();
+      industry.verifiedBy = req.user.id;
+    } else {
+      industry.verifiedAt = undefined;
+      industry.verifiedBy = undefined;
+    }
+
+    await industry.save();
+    logAudit(req.user.id, industry.verified ? 'verified_industry' : 'unverified_industry', 'Industry', industry.id, { name: industry.name });
+    res.json(industry);
   })
 );
 

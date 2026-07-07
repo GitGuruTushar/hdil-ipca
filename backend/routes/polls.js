@@ -5,6 +5,7 @@ const Poll = require('../models/Poll');
 const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const logAudit = require('../utils/auditLog');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -128,6 +129,7 @@ router.delete(
     const poll = await Poll.findById(req.params.id);
     if (!poll) throw new AppError('Poll not found', 404);
     await poll.deleteOne();
+    logAudit(req.user.id, 'deleted_poll', 'Poll', poll.id, { question: poll.question });
     res.json({ msg: 'Poll removed' });
   })
 );

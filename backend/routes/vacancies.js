@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
+const multer = require('multer');
+const fs = require('fs');
 const Vacancy = require('../models/Vacancy');
 const JobApplication = require('../models/JobApplication');
 const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const cloudinary = require('../utils/cloudinary');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -13,6 +16,10 @@ const runValidation = (req) => {
     throw new AppError(errors.array().map((e) => e.msg).join(', '), 400);
   }
 };
+
+// Local multer instance for resume uploads — the shared config/upload.js only allows
+// image/video mimetypes, but resumes need PDF/DOC support, so we don't reuse it here.
+const resumeUpload = multer({ dest: 'uploads/', limits: { fileSize: 10 * 1024 * 1024 } });
 
 // @route   GET /api/vacancies
 // @desc    List all open, not-yet-expired vacancies
@@ -115,10 +122,11 @@ router.delete(
 );
 
 // @route   POST /api/vacancies/:id/apply
-// @desc    Apply to a vacancy — no account needed
+// @desc    Apply to a vacancy — no account needed. Optional multipart "resume" file (PDF/DOC).
 // @access  Public
 router.post(
   '/:id/apply',
+  resumeUpload.single('resume'),
   [
     check('applicantName', 'Name is required').not().isEmpty(),
     check('applicantEmail', 'A valid email is required').isEmail(),
@@ -133,13 +141,24 @@ router.post(
       throw new AppError('This vacancy is no longer accepting applications', 400);
     }
 
+    let resumeUrl;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'resumes',
+        resource_type: 'raw'
+      });
+      fs.unlinkSync(req.file.path);
+      resumeUrl = result.secure_url;
+    }
+
     const { applicantName, applicantEmail, applicantPhone, coverNote } = req.body;
     const application = await JobApplication.create({
       vacancy: vacancy.id,
       applicantName,
       applicantEmail,
       applicantPhone,
-      coverNote
+      coverNote,
+      resumeUrl
     });
 
     res.status(201).json(application);
