@@ -90,6 +90,11 @@ app.use('/api/updates', require('./routes/updates'));
 app.use('/api/emergency', require('./routes/emergency'));
 app.use('/api/polls', require('./routes/polls'));
 app.use('/api/workshops', require('./routes/workshops'));
+app.use('/api/notices', require('./routes/notices'));
+app.use('/api/vacancies', require('./routes/vacancies'));
+app.use('/api/gallery', require('./routes/gallery'));
+app.use('/api/feedback', require('./routes/feedback'));
+app.use('/api/contact', require('./routes/contact'));
 
 // 404 for unknown API routes
 app.use('/api', (req, res) => {
