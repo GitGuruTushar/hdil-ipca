@@ -1,180 +1,148 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
+const fs = require('fs');
 const Update = require('../models/Update');
-const auth = require('../middleware/auth');
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
+const { protect, authorize } = require('../middleware/auth');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
+const cloudinary = require('../utils/cloudinary');
+const { upload, enforceSizeLimits, IMAGE_TYPES } = require('../config/upload');
 
-// Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
-
-// @route   GET api/updates
-// @desc    Get all updates
-// @access  Public
-router.get('/', async (req, res) => {
-  try {
-    const updates = await Update.find().sort({ createdAt: -1 }).populate('createdBy', 'username');
-    res.json(updates);
-    console.log(updates);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+const runValidation = (req) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    throw new AppError(errors.array().map((e) => e.msg).join(', '), 400);
   }
-});
+};
 
-// @route   POST api/updates
-// @desc    Create a new update
+const uploadMediaToCloudinary = async (files) => {
+  enforceSizeLimits(files);
+  const results = await Promise.all(
+    files.map((file) =>
+      cloudinary.uploader.upload(file.path, {
+        folder: 'updates',
+        resource_type: IMAGE_TYPES.includes(file.mimetype) ? 'image' : 'video'
+      })
+    )
+  );
+  files.forEach((file) => fs.unlinkSync(file.path));
+
+  const images = [];
+  let videoUrl;
+  results.forEach((result, i) => {
+    if (IMAGE_TYPES.includes(files[i].mimetype)) images.push(result.secure_url);
+    else videoUrl = result.secure_url;
+  });
+  return { images, videoUrl };
+};
+
+// @route   GET /api/updates
+// @desc    Get all updates (optional ?type= & ?category= filters)
+// @access  Public
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
+    const filter = {};
+    if (req.query.type) filter.type = req.query.type;
+    if (req.query.category) filter.category = req.query.category;
+
+    const updates = await Update.find(filter).sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
+    res.json(updates);
+  })
+);
+
+const contentFields = [
+  check('type', 'Type is required').isIn(['news', 'announcement', 'blogs']),
+  check('category', 'Category must be maintenance, events, achievements, or general').optional().isIn(['maintenance', 'events', 'achievements', 'general']),
+  check('title', 'Title is required').not().isEmpty(),
+  check('content', 'Content is required').not().isEmpty(),
+  check('redirectUrl')
+    .optional()
+    .custom((value, { req }) => {
+      if (req.body.type === 'blogs' && !value) {
+        throw new Error('Redirect URL is required for blog posts');
+      }
+      return true;
+    })
+];
+
+// @route   POST /api/updates
+// @desc    Create a new update (up to 5 images and/or 1 video)
 // @access  Private (Admin only)
 router.post(
   '/',
-  upload.single('imageFile'),
-  [
-    auth,
-    [
-      check('type', 'Type is required').not().isEmpty(),
-      check('title', 'Title is required').not().isEmpty(),
-      check('content', 'Content is required').not().isEmpty(),
-      check('redirectUrl')
-        .optional()
-        .custom((value, { req }) => {
-          if (req.body.type === 'blogs' && !value) {
-            throw new Error('Redirect URL is required for blog posts');
-          }
-          return true;
-        }),
-    ],
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+  protect,
+  authorize('admin'),
+  upload.fields([{ name: 'images', maxCount: 5 }, { name: 'video', maxCount: 1 }]),
+  contentFields,
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+    const { type, category, title, content, redirectUrl } = req.body;
 
-    try {
-      if (req.user.role !== 'admin') {
-        return res.status(403).json({ msg: 'Unauthorized: Admin access required' });
-      }
+    const files = [...(req.files?.images || []), ...(req.files?.video || [])];
+    const { images, videoUrl } = files.length ? await uploadMediaToCloudinary(files) : { images: [], videoUrl: undefined };
 
-      const { type, title, content, redirectUrl } = req.body;
-      console.log(req.body);
-      let imageUrl = null;
-      if (req.file) {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          resource_type: 'image',
-          folder: 'updates',
-        });
-        imageUrl = result.secure_url;
-      }
-      console.log(imageUrl);
-      const newUpdate = new Update({
-        type,
-        title,
-        content,
-        imageUrl,
-        redirectUrl: type === 'blogs' ? redirectUrl : undefined,
-        createdBy: req.user.id,
-      });
+    const update = await Update.create({
+      type,
+      category,
+      title,
+      content,
+      images,
+      videoUrl,
+      redirectUrl: type === 'blogs' ? redirectUrl : undefined,
+      createdBy: req.user.id
+    });
 
-      const update = await newUpdate.save();
-      res.json(update);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
-  }
+    res.status(201).json(update);
+  })
 );
 
-
-// @route   PUT api/updates/:id
-// @desc    Update an update
+// @route   PUT /api/updates/:id
+// @desc    Update an update (optionally replacing media)
 // @access  Private (Admin only)
-router.put('/:id', [
-  auth,
-  [
-    check('type', 'Type is required').not().isEmpty(),
-    check('title', 'Title is required').not().isEmpty(),
-    check('content', 'Content is required').not().isEmpty(),
-    check('redirectUrl')
-      .optional()
-      .custom((value, { req }) => {
-        if (req.body.type === 'blogs' && !value) {
-          throw new Error('Redirect URL is required for blog posts');
-        }
-        if (value && !value.startsWith('http')) {
-          throw new Error('Invalid redirect URL');
-        }
-        return true;
-      })
-  ]
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  try {
-    if (req.user.role !== 'admin') {
-      return res.status(401).json({ msg: 'Not authorized' });
-    }
-
-    let update = await Update.findById(req.params.id);
-
-    if (!update) {
-      return res.status(404).json({ msg: 'Update not found' });
-    }
-
-    // If type is changing to/from blogs, handle redirectUrl appropriately
-    if (req.body.type === 'blogs' && !req.body.redirectUrl) {
-      return res.status(400).json({ msg: 'Redirect URL is required for blog posts' });
-    }
-
-    if (req.body.type !== 'blogs') {
-      req.body.redirectUrl = undefined;
-    }
-
-    update = await Update.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-
-    res.json(update);
-  } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Update not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
-
-// @route   DELETE api/updates/:id
-// @desc    Delete an update
-// @access  Private (Admin only)
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') {
-      return res.status(401).json({ msg: 'Not authorized' });
-    }
-
+router.put(
+  '/:id',
+  protect,
+  authorize('admin'),
+  upload.fields([{ name: 'images', maxCount: 5 }, { name: 'video', maxCount: 1 }]),
+  contentFields,
+  asyncHandler(async (req, res) => {
+    runValidation(req);
     const update = await Update.findById(req.params.id);
+    if (!update) throw new AppError('Update not found', 404);
 
-    if (!update) {
-      return res.status(404).json({ msg: 'Update not found' });
+    const { type, category, title, content, redirectUrl } = req.body;
+    update.type = type;
+    if (category) update.category = category;
+    update.title = title;
+    update.content = content;
+    update.redirectUrl = type === 'blogs' ? redirectUrl : undefined;
+
+    const files = [...(req.files?.images || []), ...(req.files?.video || [])];
+    if (files.length) {
+      const { images, videoUrl } = await uploadMediaToCloudinary(files);
+      if (images.length) update.images = images;
+      if (videoUrl) update.videoUrl = videoUrl;
     }
 
-    await update.remove();
+    await update.save();
+    res.json(update);
+  })
+);
 
+// @route   DELETE /api/updates/:id
+// @access  Private (Admin only)
+router.delete(
+  '/:id',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const update = await Update.findById(req.params.id);
+    if (!update) throw new AppError('Update not found', 404);
+    await update.deleteOne();
     res.json({ msg: 'Update removed' });
-  } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Update not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
+  })
+);
 
 module.exports = router;
-

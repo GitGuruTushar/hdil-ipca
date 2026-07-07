@@ -7,6 +7,10 @@ const PollSchema = new mongoose.Schema({
     trim: true,
     maxlength: [200, 'Question can not be more than 200 characters']
   },
+  description: {
+    type: String,
+    maxlength: [500, 'Description can not be more than 500 characters']
+  },
   options: [{
     text: {
       type: String,
@@ -17,20 +21,27 @@ const PollSchema = new mongoose.Schema({
       default: 0
     }
   }],
+  votedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   expiresAt: {
     type: Date,
     required: true
+  },
+  closedEarly: {
+    type: Boolean,
+    default: false
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
-});
+}, { timestamps: true });
+
+PollSchema.methods.isOpen = function () {
+  return !this.closedEarly && new Date(this.expiresAt) > new Date();
+};
 
 module.exports = mongoose.model('Poll', PollSchema);
-

@@ -1,238 +1,320 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const { check, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const auth = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
+const sendEmail = require('../utils/sendEmail');
 
-// @route   POST api/auth/register
-// @desc    Register user (Admin only)
+const signToken = (user) =>
+  jwt.sign(
+    { user: { id: user.id, role: user.role } },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+const runValidation = (req) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    throw new AppError(errors.array().map((e) => e.msg).join(', '), 400);
+  }
+};
+
+const registerFields = [
+  check('username', 'Username is required').not().isEmpty(),
+  check('fullName', 'Full name is required').not().isEmpty(),
+  check('email', 'Please include a valid email').isEmail(),
+  check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
+];
+
+// @route   POST /api/auth/signup
+// @desc    Self-registration by a prospective member — account stays 'pending' until an admin approves it
+// @access  Public
+router.post(
+  '/signup',
+  registerFields,
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+    const { username, fullName, email, password, phone } = req.body;
+
+    const existing = await User.findOne({ $or: [{ email }, { username }] });
+    if (existing) {
+      throw new AppError('An account with that email or username already exists', 400);
+    }
+
+    const user = await User.create({
+      username,
+      fullName,
+      email,
+      phone,
+      password,
+      role: 'member',
+      status: 'pending'
+    });
+
+    res.status(201).json({
+      msg: 'Account created. An admin needs to approve it before you can log in.',
+      userId: user.id
+    });
+  })
+);
+
+// @route   POST /api/auth/register
+// @desc    Admin directly creates a member (or admin) account — immediately usable, no approval needed
 // @access  Private (Admin)
 router.post(
   '/register',
-  [
-    auth, // Protect the route with authentication middleware
-    check('username', 'Username is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check(
-      'password',
-      'Please enter a password with 6 or more characters'
-    ).isLength({ min: 6 })
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+  protect,
+  authorize('admin'),
+  [...registerFields, check('role', 'Role must be member or admin').optional().isIn(['member', 'admin'])],
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+    const { username, fullName, email, password, phone, role } = req.body;
+
+    const existing = await User.findOne({ $or: [{ email }, { username }] });
+    if (existing) {
+      throw new AppError('An account with that email or username already exists', 400);
     }
 
-    // Check if the logged-in user is an admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ msg: 'Access denied. Admins only.' });
-    }
+    const user = await User.create({
+      username,
+      fullName,
+      email,
+      phone,
+      password,
+      role: role || 'member',
+      status: 'approved'
+    });
 
-    const { username, email, password } = req.body;
-
-    try {
-      let user = await User.findOne({ email });
-
-      if (user) {
-        return res.status(400).json({ msg: 'User already exists' });
-      }
-
-      user = new User({
-        username,
-        email,
-        password
-      });
-
-      // Save user to database
-      await user.save();
-
-      res.status(201).json({ msg: 'User registered successfully' });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  }
+    res.status(201).json({ msg: 'User registered successfully', userId: user.id });
+  })
 );
 
+// @route   GET /api/auth/pending
+// @desc    List accounts awaiting approval
+// @access  Private (Admin)
+router.get(
+  '/pending',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const users = await User.find({ status: 'pending' }).sort({ createdAt: -1 });
+    res.json(users);
+  })
+);
 
-// @route   POST api/auth/Adminregister
-// @desc    Register user
+// @route   PUT /api/auth/users/:id/approve
+// @desc    Approve a pending self-registered account
+// @access  Private (Admin)
+router.put(
+  '/users/:id/approve',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user) throw new AppError('User not found', 404);
+    user.status = 'approved';
+    await user.save();
+    res.json({ msg: 'User approved', user });
+  })
+);
+
+// @route   PUT /api/auth/users/:id/reject
+// @desc    Reject (delete) a pending self-registered account
+// @access  Private (Admin)
+router.put(
+  '/users/:id/reject',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user) throw new AppError('User not found', 404);
+    if (user.status !== 'pending') {
+      throw new AppError('Only pending accounts can be rejected', 400);
+    }
+    await user.deleteOne();
+    res.json({ msg: 'Registration rejected' });
+  })
+);
+
+// @route   PUT /api/auth/users/:id/disable
+// @desc    Toggle an approved account's access without deleting their data
+// @access  Private (Admin)
+router.put(
+  '/users/:id/disable',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user) throw new AppError('User not found', 404);
+    if (user.id === req.user.id) {
+      throw new AppError('You cannot disable your own account', 400);
+    }
+    user.status = user.status === 'disabled' ? 'approved' : 'disabled';
+    await user.save();
+    res.json({ msg: `User ${user.status}`, user });
+  })
+);
+
+// @route   POST /api/auth/login
+// @desc    Authenticate user & get token
 // @access  Public
 router.post(
-  '/Adminregister',
+  '/login',
   [
-    check('username', 'Username is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
-    check(
-      'password',
-      'Please enter a password with 6 or more characters'
-    ).isLength({ min: 6 })
+    check('password', 'Password is required').exists()
   ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { username, email, password } = req.body;
-
-    try {
-      let user = await User.findOne({ email });
-
-      if (user) {
-        return res.status(400).json({ msg: 'User already exists' });
-      }
-
-      user = new User({
-        username,
-        email,
-        password,
-        role : 'admin'
-      });
-
-      await user.save();
-
-      const payload = {
-        user: {
-          id: user.id,
-          role: user.role
-        }
-      };
-
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token });
-        }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  }
-);
-
-// @route   POST api/auth/login
-// @desc    Authenticate user & get token
-// @access  Public. 
-router.post( 
-  '/login', 
-  [
-    check('email', 'Please include a valid email').isEmail(), 
-    check('password', 'Password is required').exists() 
-  ], 
-  async (req, res) => { 
-    const errors = validationResult(req); 
-    if (!errors.isEmpty()) { 
-      return res.status(400).json({ errors: errors.array() }); 
-    } 
-
+  asyncHandler(async (req, res) => {
+    runValidation(req);
     const { email, password } = req.body;
 
-    try {
-      let user = await User.findOne({ email }).select('+password');
-
-      if (!user) {
-        return res.status(400).json({ msg: 'Invalid Credentials' });
-      }
-
-      const isMatch = await user.matchPassword(password);
-
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'Invalid Credentials' });
-      }
-
-      const payload = {
-        user: {
-          id: user.id,
-          role: user.role
-        }
-      };
-
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' },
-        (err, token) => {
-          if (err) throw err;
-          res.json({ token, role: user.role });
-        }
-      );
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
+    const user = await User.findOne({ email }).select('+password');
+    if (!user || !(await user.matchPassword(password))) {
+      throw new AppError('Invalid credentials', 400);
     }
-  }
+    if (user.status === 'pending') {
+      throw new AppError('Your account is awaiting admin approval', 403);
+    }
+    if (user.status === 'disabled') {
+      throw new AppError('Your account has been disabled. Contact the federation office.', 403);
+    }
+
+    res.json({ token: signToken(user), role: user.role, fullName: user.fullName });
+  })
 );
 
-// @route   GET api/auth/me
-// @desc    Get current logged in user
-// @access  Private
-router.get('/me', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    res.json(user);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+// @route   POST /api/auth/forgot-password
+// @desc    Email a password reset link
+// @access  Public
+router.post(
+  '/forgot-password',
+  [check('email', 'Please include a valid email').isEmail()],
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+    const user = await User.findOne({ email: req.body.email });
 
-// @route   GET api/auth/users
-// @desc    Get all users (Admin only)
-// @access  Private (Admin)
-router.get('/users', auth, async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ msg: 'Access denied. Admins only.' });
-  }
+    // Always return the same response whether or not the account exists, so this
+    // endpoint can't be used to enumerate registered emails.
+    if (user) {
+      const resetToken = user.getResetPasswordToken();
+      await user.save({ validateBeforeSave: false });
 
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-// @route   DELETE api/auth/users/:id
-// @desc    Delete user (Admin only)
-// @access  Private (Admin)
-router.delete('/users/:id', auth, async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ msg: 'Access denied. Admins only.' });
-  }
-
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: 'Reset your HDIL-IPCA password',
+          html: `<p>Hi ${user.fullName},</p><p>Click below to reset your password. This link expires in 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you didn't request this, ignore this email.</p>`
+        });
+      } catch (err) {
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save({ validateBeforeSave: false });
+        throw new AppError('Could not send reset email — please try again later', 500);
+      }
     }
 
-    await user.remove();
-    res.json({ msg: 'User deleted' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
+    res.json({ msg: 'If an account with that email exists, a reset link has been sent.' });
+  })
+);
 
+// @route   PUT /api/auth/reset-password/:token
+// @desc    Set a new password using a valid reset token
+// @access  Public
+router.put(
+  '/reset-password/:token',
+  [check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })],
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      throw new AppError('Reset link is invalid or has expired', 400);
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({ token: signToken(user), role: user.role, msg: 'Password updated' });
+  })
+);
+
+// @route   GET /api/auth/me
+// @desc    Get current logged in user
+// @access  Private
+router.get(
+  '/me',
+  protect,
+  asyncHandler(async (req, res) => {
+    res.json(req.user);
+  })
+);
+
+// @route   PUT /api/auth/me
+// @desc    Update own profile (name/phone) or password (requires current password)
+// @access  Private
+router.put(
+  '/me',
+  protect,
+  asyncHandler(async (req, res) => {
+    const { fullName, phone, currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (fullName) user.fullName = fullName;
+    if (phone !== undefined) user.phone = phone;
+
+    if (newPassword) {
+      if (!currentPassword || !(await user.matchPassword(currentPassword))) {
+        throw new AppError('Current password is incorrect', 400);
+      }
+      user.password = newPassword;
+    }
+
+    await user.save();
+    res.json({ msg: 'Profile updated' });
+  })
+);
+
+// @route   GET /api/auth/users
+// @desc    Get all approved/disabled users (Admin only)
+// @access  Private (Admin)
+router.get(
+  '/users',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const users = await User.find({ status: { $ne: 'pending' } }).sort({ createdAt: -1 });
+    res.json(users);
+  })
+);
+
+// @route   DELETE /api/auth/users/:id
+// @desc    Delete user (Admin only)
+// @access  Private (Admin)
+router.delete(
+  '/users/:id',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    if (req.params.id === req.user.id) {
+      throw new AppError('You cannot delete your own account', 400);
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) throw new AppError('User not found', 404);
+    await user.deleteOne();
+    res.json({ msg: 'User deleted' });
+  })
+);
 
 module.exports = router;
-
-// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc2M2RkNTY3ZjYwYTM0MmM5ZmM5NjJmIiwicm9sZSI6Im1lbWJlciJ9LCJpYXQiOjE3MzQ1OTc5NzQsImV4cCI6MTczNDYwMTU3NH0.8_lMHruy-CT0R3ymvaKhF5A67KM2J86-PKrCA8cDbK4"
-
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc2M2RkNTY3ZjYwYTM0MmM5ZmM5NjJmIiwicm9sZSI6Im1lbWJlciJ9LCJpYXQiOjE3MzQ2MjIwMDksImV4cCI6MTczNTIyNjgwOX0.10ARN4mflTmHhxJxos_IuQk8N5W1uqkn0s9SzwBl-_Y
-
-
-
-// // admin 
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc3OTRkOTIwMGI5NDllZjI5MGIyNGU5Iiwicm9sZSI6ImFkbWluIn0sImlhdCI6MTczNjAwMjk2MiwiZXhwIjoxNzM2MDA2NTYyfQ.kvE_fRjy-fW-LkN8OAbGjBuTMYYLkPlYwK91Jx7hSFA

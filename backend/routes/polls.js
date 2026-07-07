@@ -2,124 +2,134 @@ const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const Poll = require('../models/Poll');
-const auth = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
 
-// @route   GET api/polls
-// @desc    Get all polls
-// @access  Public
-router.get('/', async (req, res) => {
-  try {
-    const polls = await Poll.find().sort({ createdAt: -1 }).populate('createdBy', 'username');
-    res.json(polls);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+const runValidation = (req) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    throw new AppError(errors.array().map((e) => e.msg).join(', '), 400);
   }
-});
+};
 
-// @route   POST api/polls
-// @desc    Create a new poll
+// @route   GET /api/polls
+// @access  Private (any logged-in member)
+router.get(
+  '/',
+  protect,
+  asyncHandler(async (req, res) => {
+    const polls = await Poll.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
+    res.json(polls);
+  })
+);
+
+// @route   POST /api/polls
 // @access  Private (Admin only)
 router.post(
   '/',
+  protect,
+  authorize('admin'),
   [
-    auth,
-    [
-      check('question', 'Question is required').not().isEmpty(),
-      check('options', 'At least two options are required').isArray({ min: 2 }),
-      check('expiresAt', 'Expiration date is required').not().isEmpty()
-    ]
+    check('question', 'Question is required').not().isEmpty(),
+    check('options', 'At least two options are required').isArray({ min: 2 }),
+    check('expiresAt', 'A valid expiration date is required').isISO8601()
   ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+    const { question, description, options, expiresAt } = req.body;
 
-    try {
-      if (req.user.role !== 'admin') {
-        return res.status(401).json({ msg: 'Not authorized' });
-      }
+    const poll = await Poll.create({
+      question,
+      description,
+      options: options.map((option) => ({ text: option, votes: 0 })),
+      expiresAt,
+      createdBy: req.user.id
+    });
 
-      const { question, options, expiresAt } = req.body;
-
-      const newPoll = new Poll({
-        question,
-        options: options.map(option => ({ text: option, votes: 0 })),
-        expiresAt,
-        createdBy: req.user.id
-      });
-
-      const poll = await newPoll.save();
-
-      res.json(poll);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server Error');
-    }
-  }
+    res.status(201).json(poll);
+  })
 );
 
-// @route   PUT api/polls/:id/vote
-// @desc    Vote on a poll
-// @access  Private
-router.put('/:id/vote', auth, async (req, res) => {
-  try {
+// @route   PUT /api/polls/:id
+// @desc    Edit a poll's question/description/expiry (not its options, to avoid invalidating existing votes)
+// @access  Private (Admin only)
+router.put(
+  '/:id',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
     const poll = await Poll.findById(req.params.id);
+    if (!poll) throw new AppError('Poll not found', 404);
 
-    if (!poll) {
-      return res.status(404).json({ msg: 'Poll not found' });
-    }
+    const { question, description, expiresAt } = req.body;
+    if (question !== undefined) poll.question = question;
+    if (description !== undefined) poll.description = description;
+    if (expiresAt !== undefined) poll.expiresAt = expiresAt;
 
-    if (new Date(poll.expiresAt) < new Date()) {
-      return res.status(400).json({ msg: 'This poll has expired' });
-    }
+    await poll.save();
+    res.json(poll);
+  })
+);
 
+// @route   PUT /api/polls/:id/close
+// @desc    Manually close a poll before its expiry
+// @access  Private (Admin only)
+router.put(
+  '/:id/close',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
+    const poll = await Poll.findById(req.params.id);
+    if (!poll) throw new AppError('Poll not found', 404);
+    poll.closedEarly = true;
+    await poll.save();
+    res.json(poll);
+  })
+);
+
+// @route   PUT /api/polls/:id/vote
+// @desc    Vote on a poll — one vote per member, enforced server-side
+// @access  Private
+router.put(
+  '/:id/vote',
+  protect,
+  asyncHandler(async (req, res) => {
     const { optionIndex } = req.body;
+    if (!Number.isInteger(optionIndex)) {
+      throw new AppError('optionIndex must be an integer', 400);
+    }
 
+    const poll = await Poll.findById(req.params.id);
+    if (!poll) throw new AppError('Poll not found', 404);
+    if (!poll.isOpen()) throw new AppError('This poll is closed', 400);
     if (optionIndex < 0 || optionIndex >= poll.options.length) {
-      return res.status(400).json({ msg: 'Invalid option' });
+      throw new AppError('Invalid option', 400);
+    }
+    if (poll.votedUsers.some((id) => id.toString() === req.user.id)) {
+      throw new AppError('You have already voted on this poll', 400);
     }
 
     poll.options[optionIndex].votes += 1;
+    poll.votedUsers.push(req.user.id);
     await poll.save();
 
     res.json(poll);
-  } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Poll not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
+  })
+);
 
-// @route   DELETE api/polls/:id
-// @desc    Delete a poll
+// @route   DELETE /api/polls/:id
 // @access  Private (Admin only)
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    if (req.user.role !== 'admin') {
-      return res.status(401).json({ msg: 'Not authorized' });
-    }
-
+router.delete(
+  '/:id',
+  protect,
+  authorize('admin'),
+  asyncHandler(async (req, res) => {
     const poll = await Poll.findById(req.params.id);
-
-    if (!poll) {
-      return res.status(404).json({ msg: 'Poll not found' });
-    }
-
-    await poll.remove();
-
+    if (!poll) throw new AppError('Poll not found', 404);
+    await poll.deleteOne();
     res.json({ msg: 'Poll removed' });
-  } catch (err) {
-    console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Poll not found' });
-    }
-    res.status(500).send('Server Error');
-  }
-});
+  })
+);
 
 module.exports = router;
-

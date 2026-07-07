@@ -10,11 +10,11 @@ const WorkshopSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, 'Please add a description'],
-    maxlength: [500, 'Description can not be more than 500 characters']
+    maxlength: [1000, 'Description can not be more than 1000 characters']
   },
   date: {
     type: Date,
-    required: [true, 'Please add a date']
+    required: [true, 'Please add a date and time']
   },
   location: {
     type: String,
@@ -22,22 +22,19 @@ const WorkshopSchema = new mongoose.Schema({
   },
   capacity: {
     type: Number,
-    required: [true, 'Please add a capacity']
+    required: [true, 'Please add a capacity'],
+    min: [1, 'Capacity must be at least 1']
   },
   registeredUsers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  reminderSentAt: Date,
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Workshop', WorkshopSchema);
-
