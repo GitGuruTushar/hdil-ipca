@@ -11,6 +11,9 @@ logs/
 # Environment variables
 .env
 
+# User-uploaded files (pushed to Cloudinary; this is just a local temp dir)
+uploads/
+
 # Build output
 dist/
 build/
