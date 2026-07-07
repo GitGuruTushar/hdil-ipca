@@ -30,7 +30,7 @@ To install the Federation website backend, follow these steps:
 1. Create a `.env` file in the root directory with the following content:
 
    ```
-   MONGODB_URI=your_mongodb_connection_string
+   mongodb://127.0.0.1:27017/HDIL=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret
    PORT=5000
    CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
