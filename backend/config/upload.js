@@ -25,15 +25,30 @@ const upload = multer({
 
 function enforceSizeLimits(files) {
   const list = Array.isArray(files) ? files : files ? [files] : [];
+
+  let offender = null;
   for (const file of list) {
     const isImage = IMAGE_TYPES.includes(file.mimetype);
     const cap = isImage ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
-    if (file.size > cap) {
-      throw new AppError(
-        `${file.originalname} exceeds the ${isImage ? '10MB image' : '100MB video'} limit.`,
-        400
-      );
+    if (!offender && file.size > cap) {
+      offender = { file, isImage };
     }
+  }
+
+  if (offender) {
+    // multer has already written every file in this batch to disk by the time we get
+    // here — clean up all of them before throwing, or rejected uploads leak temp files.
+    for (const file of list) {
+      try {
+        require('fs').unlinkSync(file.path);
+      } catch (err) {
+        // ignore — file may already be missing/cleaned up
+      }
+    }
+    throw new AppError(
+      `${offender.file.originalname} exceeds the ${offender.isImage ? '10MB image' : '100MB video'} limit.`,
+      400
+    );
   }
 }
 

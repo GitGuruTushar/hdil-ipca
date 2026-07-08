@@ -32,4 +32,6 @@ const DuesRecordSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+DuesRecordSchema.index({ member: 1, status: 1 });
+
 module.exports = mongoose.model('DuesRecord', DuesRecordSchema);

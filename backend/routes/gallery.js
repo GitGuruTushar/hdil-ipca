@@ -18,20 +18,41 @@ const runValidation = (req) => {
 
 const uploadMediaToCloudinary = async (files) => {
   enforceSizeLimits(files);
-  const results = await Promise.all(
-    files.map((file) =>
-      cloudinary.uploader.upload(file.path, {
-        folder: 'gallery',
-        resource_type: IMAGE_TYPES.includes(file.mimetype) ? 'image' : 'video'
-      })
-    )
-  );
-  files.forEach((file) => fs.unlinkSync(file.path));
+  try {
+    const results = await Promise.all(
+      files.map((file) =>
+        cloudinary.uploader.upload(file.path, {
+          folder: 'gallery',
+          resource_type: IMAGE_TYPES.includes(file.mimetype) ? 'image' : 'video'
+        })
+      )
+    );
 
-  return results.map((result, i) => ({
-    url: result.secure_url,
-    type: IMAGE_TYPES.includes(files[i].mimetype) ? 'image' : 'video'
-  }));
+    return results.map((result, i) => ({
+      url: result.secure_url,
+      type: IMAGE_TYPES.includes(files[i].mimetype) ? 'image' : 'video'
+    }));
+  } finally {
+    files.forEach((file) => fs.unlinkSync(file.path));
+  }
+};
+
+const parseKeywords = (raw) => {
+  if (raw === undefined) return undefined;
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      throw new AppError('keywords must be a valid JSON array', 400);
+    }
+    if (!Array.isArray(parsed)) {
+      throw new AppError('keywords must be a valid JSON array', 400);
+    }
+    return parsed;
+  }
+  throw new AppError('keywords must be a valid JSON array', 400);
 };
 
 // @route   GET /api/gallery
@@ -40,8 +61,18 @@ const uploadMediaToCloudinary = async (files) => {
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const albums = await Album.find().sort({ eventDate: -1 });
-    res.json(albums);
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const total = await Album.countDocuments();
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const albums = await Album.find()
+      .sort({ eventDate: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({ albums, page, totalPages, total });
   })
 );
 
@@ -74,7 +105,8 @@ router.post(
   albumFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
-    const { title, eventDate, category } = req.body;
+    const { title, eventDate, category, keywords } = req.body;
+    const parsedKeywords = parseKeywords(keywords);
 
     const items = req.files && req.files.length ? await uploadMediaToCloudinary(req.files) : [];
 
@@ -82,6 +114,7 @@ router.post(
       title,
       eventDate,
       category,
+      keywords: parsedKeywords,
       items,
       createdBy: req.user.id
     });
@@ -102,10 +135,11 @@ router.put(
     const album = await Album.findById(req.params.id);
     if (!album) throw new AppError('Album not found', 404);
 
-    const { title, eventDate, category, captions } = req.body;
+    const { title, eventDate, category, captions, keywords } = req.body;
     if (title !== undefined) album.title = title;
     if (eventDate !== undefined) album.eventDate = eventDate;
     if (category !== undefined) album.category = category;
+    if (keywords !== undefined) album.keywords = parseKeywords(keywords);
 
     if (captions !== undefined) {
       let captionMap = captions;
@@ -148,24 +182,21 @@ router.delete(
   })
 );
 
-// @route   DELETE /api/gallery/:id/items/:itemIndex
+// @route   DELETE /api/gallery/:id/items/:itemId
 // @desc    Remove a single photo/video from an album
 // @access  Private (Admin only)
 router.delete(
-  '/:id/items/:itemIndex',
+  '/:id/items/:itemId',
   protect,
   authorize('admin'),
   asyncHandler(async (req, res) => {
-    const album = await Album.findById(req.params.id);
+    const album = await Album.findByIdAndUpdate(
+      req.params.id,
+      { $pull: { items: { _id: req.params.itemId } } },
+      { new: true }
+    );
     if (!album) throw new AppError('Album not found', 404);
 
-    const index = Number(req.params.itemIndex);
-    if (!Number.isInteger(index) || !album.items[index]) {
-      throw new AppError('Item not found', 404);
-    }
-
-    album.items.splice(index, 1);
-    await album.save();
     res.json(album);
   })
 );

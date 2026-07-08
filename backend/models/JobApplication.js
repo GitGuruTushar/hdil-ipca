@@ -9,7 +9,8 @@ const JobApplicationSchema = new mongoose.Schema({
   applicantName: {
     type: String,
     required: [true, 'Please add your name'],
-    trim: true
+    trim: true,
+    maxlength: [200, 'Name can not be more than 200 characters']
   },
   applicantEmail: {
     type: String,
@@ -20,7 +21,8 @@ const JobApplicationSchema = new mongoose.Schema({
   applicantPhone: {
     type: String,
     required: [true, 'Please add your phone number'],
-    trim: true
+    trim: true,
+    maxlength: [20, 'Phone number can not be more than 20 characters']
   },
   coverNote: {
     type: String,
@@ -28,7 +30,14 @@ const JobApplicationSchema = new mongoose.Schema({
   },
   resumeUrl: {
     type: String
+  },
+  status: {
+    type: String,
+    enum: ['new', 'reviewed', 'shortlisted', 'rejected'],
+    default: 'new'
   }
 }, { timestamps: true });
+
+JobApplicationSchema.index({ vacancy: 1 });
 
 module.exports = mongoose.model('JobApplication', JobApplicationSchema);

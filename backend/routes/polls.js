@@ -101,19 +101,34 @@ router.put(
       throw new AppError('optionIndex must be an integer', 400);
     }
 
-    const poll = await Poll.findById(req.params.id);
-    if (!poll) throw new AppError('Poll not found', 404);
-    if (!poll.isOpen()) throw new AppError('This poll is closed', 400);
-    if (optionIndex < 0 || optionIndex >= poll.options.length) {
+    const pollForBounds = await Poll.findById(req.params.id).select('options');
+    if (!pollForBounds) throw new AppError('Poll not found', 404);
+    if (optionIndex < 0 || optionIndex >= pollForBounds.options.length) {
       throw new AppError('Invalid option', 400);
     }
-    if (poll.votedUsers.some((id) => id.toString() === req.user.id)) {
-      throw new AppError('You have already voted on this poll', 400);
-    }
 
-    poll.options[optionIndex].votes += 1;
-    poll.votedUsers.push(req.user.id);
-    await poll.save();
+    const poll = await Poll.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        votedUsers: { $ne: req.user.id },
+        expiresAt: { $gt: new Date() },
+        closedEarly: { $ne: true }
+      },
+      {
+        $inc: { [`options.${optionIndex}.votes`]: 1 },
+        $addToSet: { votedUsers: req.user.id }
+      },
+      { new: true }
+    );
+
+    if (!poll) {
+      const existing = await Poll.findById(req.params.id);
+      if (!existing) throw new AppError('Poll not found', 404);
+      if (existing.votedUsers.some((id) => id.toString() === req.user.id)) {
+        throw new AppError('You have already voted on this poll', 400);
+      }
+      throw new AppError('This poll is closed', 400);
+    }
 
     res.json(poll);
   })

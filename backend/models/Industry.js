@@ -47,13 +47,19 @@ const IndustrySchema = new mongoose.Schema({
     }]
   }],
   materials: [String],
+  keywords: {
+    type: [String],
+    default: []
+  },
   gstInfo: {
     type: String,
-    required: [true, 'Please add GST information']
+    required: [true, 'Please add GST information'],
+    maxlength: [50, 'GST information can not be more than 50 characters']
   },
   contactNumber: {
     type: String,
-    required: [true, 'Please add a contact number']
+    required: [true, 'Please add a contact number'],
+    maxlength: [20, 'Contact number can not be more than 20 characters']
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
@@ -75,5 +81,7 @@ const IndustrySchema = new mongoose.Schema({
     ref: 'User'
   }
 }, { timestamps: true });
+
+IndustrySchema.index({ owner: 1 });
 
 module.exports = mongoose.model('Industry', IndustrySchema);

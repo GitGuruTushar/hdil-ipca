@@ -19,19 +19,56 @@ const runValidation = (req) => {
 
 // Local multer instance for resume uploads — the shared config/upload.js only allows
 // image/video mimetypes, but resumes need PDF/DOC support, so we don't reuse it here.
-const resumeUpload = multer({ dest: 'uploads/', limits: { fileSize: 10 * 1024 * 1024 } });
+const RESUME_MIMETYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+const resumeUpload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!RESUME_MIMETYPES.includes(file.mimetype)) {
+      return cb(new AppError('Unsupported file type. Allowed: PDF or Word document.', 400));
+    }
+    cb(null, true);
+  }
+});
+
+// Accepts `keywords` as either a JSON array or a JSON-stringified array (multipart forms
+// serialize arrays as strings). Throws a 400 AppError on invalid JSON.
+const parseKeywords = (raw) => {
+  if (raw === undefined) return undefined;
+  if (typeof raw !== 'string') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    throw new AppError('Invalid JSON for keywords', 400);
+  }
+};
 
 // @route   GET /api/vacancies
-// @desc    List all open, not-yet-expired vacancies
+// @desc    List all open, not-yet-expired vacancies (paginated)
 // @access  Public
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const vacancies = await Vacancy.find({ status: 'open', deadline: { $gte: new Date() } })
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const filter = { status: 'open', deadline: { $gte: new Date() } };
+
+    const total = await Vacancy.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const vacancies = await Vacancy.find(filter)
       .sort({ deadline: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
       .populate('industry', 'name')
       .populate('postedBy', 'username fullName');
-    res.json(vacancies);
+
+    res.json({ vacancies, page, totalPages, total });
   })
 );
 
@@ -65,6 +102,7 @@ router.post(
   asyncHandler(async (req, res) => {
     runValidation(req);
     const { title, description, eligibility, deadline, industry } = req.body;
+    const keywords = parseKeywords(req.body.keywords);
 
     const vacancy = await Vacancy.create({
       title,
@@ -72,7 +110,8 @@ router.post(
       eligibility,
       deadline,
       industry: industry || undefined,
-      postedBy: req.user.id
+      postedBy: req.user.id,
+      keywords: keywords || undefined
     });
 
     res.status(201).json(vacancy);
@@ -97,6 +136,9 @@ router.put(
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) vacancy[field] = req.body[field];
     }
+    if (req.body.keywords !== undefined) {
+      vacancy.keywords = parseKeywords(req.body.keywords);
+    }
 
     await vacancy.save();
     res.json(vacancy);
@@ -117,6 +159,7 @@ router.delete(
     }
 
     await vacancy.deleteOne();
+    await JobApplication.deleteMany({ vacancy: req.params.id });
     res.json({ msg: 'Vacancy removed' });
   })
 );
@@ -143,12 +186,15 @@ router.post(
 
     let resumeUrl;
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'resumes',
-        resource_type: 'raw'
-      });
-      fs.unlinkSync(req.file.path);
-      resumeUrl = result.secure_url;
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'resumes',
+          resource_type: 'raw'
+        });
+        resumeUrl = result.secure_url;
+      } finally {
+        fs.unlinkSync(req.file.path);
+      }
     }
 
     const { applicantName, applicantEmail, applicantPhone, coverNote } = req.body;
@@ -181,6 +227,33 @@ router.get(
 
     const applications = await JobApplication.find({ vacancy: req.params.id }).sort({ createdAt: -1 });
     res.json(applications);
+  })
+);
+
+// @route   PUT /api/vacancies/:id/applications/:appId/status
+// @desc    Update an applicant's triage status
+// @access  Private (postedBy or admin)
+router.put(
+  '/:id/applications/:appId/status',
+  protect,
+  [check('status', 'Invalid status').isIn(['new', 'reviewed', 'shortlisted', 'rejected'])],
+  asyncHandler(async (req, res) => {
+    runValidation(req);
+
+    const vacancy = await Vacancy.findById(req.params.id);
+    if (!vacancy) throw new AppError('Vacancy not found', 404);
+
+    if (vacancy.postedBy.toString() !== req.user.id && req.user.role !== 'admin') {
+      throw new AppError('Not authorized to update applications for this vacancy', 403);
+    }
+
+    const application = await JobApplication.findOne({ _id: req.params.appId, vacancy: req.params.id });
+    if (!application) throw new AppError('Application not found', 404);
+
+    application.status = req.body.status;
+    await application.save();
+
+    res.json(application);
   })
 );
 

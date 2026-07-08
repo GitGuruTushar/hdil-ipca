@@ -7,6 +7,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const sendEmail = require('../utils/sendEmail');
 const logAudit = require('../utils/auditLog');
+const notify = require('../utils/notify');
+const { sendReminderForWorkshop } = require('../jobs/workshopReminders');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -29,8 +31,19 @@ router.get(
   '/',
   protect,
   asyncHandler(async (req, res) => {
-    const workshops = await Workshop.find().sort({ date: 1 }).populate('createdBy', 'username fullName');
-    res.json(workshops);
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const total = await Workshop.countDocuments();
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const workshops = await Workshop.find()
+      .sort({ date: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('createdBy', 'username fullName');
+
+    res.json({ workshops, page, totalPages, total });
   })
 );
 
@@ -117,6 +130,13 @@ router.post(
       html: `<p>Hi ${req.user.fullName},</p><p>You're confirmed for <strong>${workshop.title}</strong> on ${new Date(workshop.date).toLocaleString()} at ${workshop.location}.</p>`
     }).catch(() => {}); // best-effort — don't fail the registration if email delivery has an issue
 
+    notify({
+      recipientId: req.user.id,
+      type: 'workshop_registered',
+      title: `Registered: ${workshop.title}`,
+      body: `You're confirmed for ${new Date(workshop.date).toLocaleString()} at ${workshop.location}.`
+    }).catch(() => {}); // best-effort — don't fail the registration if the notification pipeline has an issue
+
     res.json(workshop);
   })
 );
@@ -147,7 +167,7 @@ router.get(
   protect,
   authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
-    const workshop = await Workshop.findById(req.params.id);
+    const workshop = await Workshop.findById(req.params.id).select('+checkinCode');
     if (!workshop) throw new AppError('Workshop not found', 404);
 
     res.json({
@@ -165,7 +185,7 @@ router.post(
   '/:id/checkin/:code',
   protect,
   asyncHandler(async (req, res) => {
-    const workshop = await Workshop.findById(req.params.id);
+    const workshop = await Workshop.findById(req.params.id).select('+checkinCode');
     if (!workshop) throw new AppError('Workshop not found', 404);
     if (workshop.checkinCode !== req.params.code) {
       throw new AppError('Invalid check-in code', 400);
@@ -193,6 +213,9 @@ router.post(
   asyncHandler(async (req, res) => {
     runValidation(req);
 
+    const targetUser = await require('../models/User').findById(req.body.userId);
+    if (!targetUser) throw new AppError('User not found', 404);
+
     const workshop = await Workshop.findByIdAndUpdate(
       req.params.id,
       { $addToSet: { checkedInUsers: req.body.userId } },
@@ -201,6 +224,25 @@ router.post(
     if (!workshop) throw new AppError('Workshop not found', 404);
 
     res.json(workshop);
+  })
+);
+
+// @route   POST /api/workshops/:id/send-reminder
+// @desc    Manually trigger the reminder email for one workshop right now, bypassing the
+//          daily cron's 24-48h window check — useful when a workshop is added with short notice.
+// @access  Private (Admin or Moderator)
+router.post(
+  '/:id/send-reminder',
+  protect,
+  authorize('admin', 'moderator'),
+  asyncHandler(async (req, res) => {
+    const workshop = await Workshop.findById(req.params.id).populate('registeredUsers', 'email fullName');
+    if (!workshop) throw new AppError('Workshop not found', 404);
+
+    await sendReminderForWorkshop(workshop);
+    logAudit(req.user.id, 'sent_workshop_reminder', 'Workshop', workshop.id, { title: workshop.title });
+
+    res.json({ msg: 'Reminder sent' });
   })
 );
 

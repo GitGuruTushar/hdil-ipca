@@ -5,6 +5,7 @@ const ContactMessage = require('../models/ContactMessage');
 const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const notify = require('../utils/notify');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -29,6 +30,16 @@ router.post(
 
     await ContactMessage.create({ name, email, phone, message });
 
+    const admins = await require('../models/User').find({ role: 'admin', status: 'approved' });
+    for (const admin of admins) {
+      notify({
+        recipientId: admin.id,
+        type: 'contact_message',
+        title: 'New contact message',
+        body: `${name} (${email}) sent a message.`
+      }).catch(() => {});
+    }
+
     res.status(201).json({ msg: 'Thank you for contacting us. We will get back to you soon.' });
   })
 );
@@ -41,11 +52,21 @@ router.get(
   protect,
   authorize('admin'),
   asyncHandler(async (req, res) => {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
 
-    const messages = await ContactMessage.find(filter).sort({ createdAt: -1 });
-    res.json(messages);
+    const total = await ContactMessage.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const messages = await ContactMessage.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({ messages, page, totalPages, total });
   })
 );
 

@@ -26,6 +26,23 @@ const logger = createLogger({
   ]
 });
 
+// --- Fail fast if required environment variables are missing, instead of letting
+// a missing JWT_SECRET throw synchronously inside every login attempt (confusing
+// generic 500, no clear cause in the logs) or a missing Cloudinary credential only
+// surface as a cryptic failure on the first upload attempt. ---
+const REQUIRED_ENV_VARS = [
+  'JWT_SECRET',
+  'MONGODB_URI',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET'
+];
+const missingEnvVars = REQUIRED_ENV_VARS.filter((name) => !process.env[name] || !process.env[name].trim());
+if (missingEnvVars.length > 0) {
+  logger.error(`Missing required environment variable(s): ${missingEnvVars.join(', ')}. Server cannot start.`);
+  process.exit(1);
+}
+
 // --- CORS: allow only known frontend origins (comma-separated in FRONTEND_URL) plus localhost dev ---
 const allowedOrigins = [
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()) : []),
@@ -77,13 +94,30 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    logger.info('MongoDB connected');
-    scheduleWorkshopReminders(logger);
-  })
-  .catch((err) => logger.error('MongoDB connection error: ' + err.message));
+// --- Initial MongoDB connection with retry/backoff. Mongoose only registers its
+// automatic-reconnection listeners after a successful connect, so if the very
+// first attempt fails (wrong URI, network/allowlist issue at boot) it would
+// otherwise never retry and the app would be stuck returning 503 forever until
+// a manual restart. Once connected (even on a later retry), mongoose's normal
+// reconnection handling takes over for any future disconnect. ---
+async function connectWithRetry(retries = 5, delayMs = 5000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI);
+      logger.info('MongoDB connected');
+      scheduleWorkshopReminders(logger);
+      return;
+    } catch (err) {
+      logger.error(`MongoDB connection attempt ${i + 1}/${retries} failed: ${err.message}`);
+      if (i < retries - 1) await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  logger.error(
+    'MongoDB connection failed after all retries — the server will keep running and retry lazily via the /api readiness gate, but is currently unable to serve any /api request.'
+  );
+}
+
+connectWithRetry();
 
 // --- Routes ---
 app.use('/api/auth', require('./routes/auth'));
@@ -105,6 +139,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/push', require('./routes/push'));
 app.use('/api/audit-log', require('./routes/auditLog'));
 app.use('/api/export', require('./routes/export'));
+app.use('/api/search', require('./routes/search'));
 
 // 404 for unknown API routes
 app.use('/api', (req, res) => {

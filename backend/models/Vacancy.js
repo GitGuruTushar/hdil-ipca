@@ -34,7 +34,13 @@ const VacancySchema = new mongoose.Schema({
     type: String,
     enum: ['open', 'closed'],
     default: 'open'
+  },
+  keywords: {
+    type: [String],
+    default: []
   }
 }, { timestamps: true });
+
+VacancySchema.index({ status: 1, deadline: 1 });
 
 module.exports = mongoose.model('Vacancy', VacancySchema);

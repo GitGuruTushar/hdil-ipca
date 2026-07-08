@@ -33,7 +33,8 @@ const WorkshopSchema = new mongoose.Schema({
   reminderSentAt: Date,
   checkinCode: {
     type: String,
-    default: () => crypto.randomBytes(4).toString('hex')
+    default: () => crypto.randomBytes(4).toString('hex'),
+    select: false
   },
   checkedInUsers: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -45,5 +46,8 @@ const WorkshopSchema = new mongoose.Schema({
     required: true
   }
 }, { timestamps: true });
+
+WorkshopSchema.index({ date: 1 });
+WorkshopSchema.index({ date: 1, reminderSentAt: 1 });
 
 module.exports = mongoose.model('Workshop', WorkshopSchema);

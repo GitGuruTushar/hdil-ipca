@@ -24,6 +24,10 @@ const UpdateSchema = new mongoose.Schema({
   },
   images: [String],
   videoUrl: String,
+  keywords: {
+    type: [String],
+    default: []
+  },
   status: {
     type: String,
     enum: ['draft', 'scheduled', 'published'],

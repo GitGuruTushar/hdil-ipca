@@ -48,8 +48,26 @@ const UserSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'disabled'],
     default: 'approved'
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date
+  resetPasswordToken: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpire: {
+    type: Date,
+    select: false
+  },
+  passwordChangedAt: {
+    type: Date
+  },
+  // Bumped every time the password changes. Embedded in the JWT at sign-time and
+  // compared on every request in middleware/auth.js — a mismatch means the token
+  // predates a password change and is rejected. A version counter sidesteps the
+  // second-resolution rounding issues a timestamp-vs-JWT-iat comparison runs into
+  // when a login and a password change land in the same wall-clock second.
+  tokenVersion: {
+    type: Number,
+    default: 0
+  }
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {
@@ -59,6 +77,8 @@ UserSchema.pre('save', async function (next) {
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  this.passwordChangedAt = new Date();
+  this.tokenVersion += 1;
   next();
 });
 

@@ -16,6 +16,10 @@ const AlbumSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Category can not be more than 50 characters']
   },
+  keywords: {
+    type: [String],
+    default: []
+  },
   items: [{
     url: {
       type: String,

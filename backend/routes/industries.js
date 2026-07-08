@@ -42,8 +42,44 @@ const uploadImagesToCloudinary = async (files) => {
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const industries = await Industry.find().populate('owner', 'username fullName');
-    res.json(industries);
+    const { buildingNumber, businessType, q } = req.query;
+
+    const filters = [];
+    if (buildingNumber !== undefined && buildingNumber !== '') {
+      filters.push({ buildingNumber: Number(buildingNumber) });
+    }
+    if (businessType !== undefined && businessType !== '') {
+      filters.push({ businessType: { $regex: businessType, $options: 'i' } });
+    }
+    if (q !== undefined && q !== '') {
+      filters.push({
+        $or: [
+          { name: { $regex: q, $options: 'i' } },
+          { description: { $regex: q, $options: 'i' } }
+        ]
+      });
+    }
+
+    const filter = filters.length ? { $and: filters } : {};
+
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+    const skip = (page - 1) * limit;
+
+    const [industries, total] = await Promise.all([
+      Industry.find(filter)
+        .populate('owner', 'username fullName')
+        .skip(skip)
+        .limit(limit),
+      Industry.countDocuments(filter)
+    ]);
+
+    res.json({
+      industries,
+      page,
+      totalPages: Math.ceil(total / limit) || 1,
+      total
+    });
   })
 );
 
@@ -89,7 +125,7 @@ router.post(
     runValidation(req);
     const {
       name, businessType, description, galaNumber, buildingNumber, occupancyType,
-      products, materials, gstInfo, contactNumber
+      products, materials, keywords, gstInfo, contactNumber
     } = req.body;
 
     const images = req.files && req.files.length ? await uploadImagesToCloudinary(req.files) : [];
@@ -103,6 +139,7 @@ router.post(
       occupancyType,
       products: parseJsonField(products, 'products') || [],
       materials: parseJsonField(materials, 'materials') || [],
+      keywords: parseJsonField(keywords, 'keywords') || [],
       gstInfo,
       contactNumber,
       owner: req.user.id,
@@ -120,7 +157,18 @@ router.put(
   '/:id',
   protect,
   upload.array('images', 5),
+  [
+    check('name', 'Business name is required').optional().not().isEmpty(),
+    check('businessType', 'Business type is required').optional().not().isEmpty(),
+    check('description', 'Description is required').optional().not().isEmpty(),
+    check('galaNumber', 'Gala number is required').optional().isNumeric(),
+    check('buildingNumber', 'Building number is required').optional().isNumeric(),
+    check('occupancyType', 'Occupancy type must be owner or tenant').optional().isIn(['owner', 'tenant']),
+    check('gstInfo', 'GST information is required').optional().not().isEmpty(),
+    check('contactNumber', 'Contact number is required').optional().not().isEmpty()
+  ],
   asyncHandler(async (req, res) => {
+    runValidation(req);
     const industry = await Industry.findById(req.params.id);
     if (!industry) throw new AppError('Business listing not found', 404);
 
@@ -141,6 +189,9 @@ router.put(
     }
     if (req.body.materials !== undefined) {
       industry.materials = parseJsonField(req.body.materials, 'materials');
+    }
+    if (req.body.keywords !== undefined) {
+      industry.keywords = parseJsonField(req.body.keywords, 'keywords');
     }
     if (req.files && req.files.length) {
       industry.images = await uploadImagesToCloudinary(req.files);

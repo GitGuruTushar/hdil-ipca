@@ -21,16 +21,24 @@ router.get(
   protect,
   authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
     if (req.query.member) filter.member = req.query.member;
 
+    const total = await DuesRecord.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
     const dues = await DuesRecord.find(filter)
       .populate('member', 'username fullName')
       .populate('industry', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-    res.json(dues);
+    res.json({ dues, page, totalPages, total });
   })
 );
 

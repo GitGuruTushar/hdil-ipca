@@ -45,14 +45,22 @@ router.get(
   protect,
   authorize('admin'),
   asyncHandler(async (req, res) => {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
     const filter = {};
     if (req.query.status) filter.status = req.query.status;
 
+    const total = await Feedback.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
     const feedback = await Feedback.find(filter)
       .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
       .populate('member', 'username fullName email');
 
-    res.json(feedback);
+    res.json({ feedback, page, totalPages, total });
   })
 );
 

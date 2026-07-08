@@ -24,6 +24,10 @@ const escapeField = (value) => {
     str = String(value);
   }
 
+  if (/^[=+\-@]/.test(str)) {
+    str = `'${str}`;
+  }
+
   if (/[",\n\r]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }

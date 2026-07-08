@@ -76,8 +76,19 @@ router.get(
   protect,
   authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
-    const notices = await Notice.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
-    res.json(notices);
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const total = await Notice.countDocuments();
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const notices = await Notice.find()
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('createdBy', 'username fullName');
+
+    res.json({ notices, page, totalPages, total });
   })
 );
 

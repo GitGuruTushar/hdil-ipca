@@ -17,12 +17,30 @@ const runValidation = (req) => {
 };
 
 // Documents can be PDFs, Word docs, etc. — the shared config/upload instance only
-// allows image/video mimetypes via its fileFilter, so this route uses its own plain
-// multer instance (no fileFilter restriction) instead of reusing that shared config.
-const documentUpload = multer({ dest: 'uploads/' });
+// allows image/video mimetypes via its fileFilter, so this route uses its own multer
+// instance instead of reusing that shared config, but still allowlists mimetypes and
+// caps size so it can't be used to stash arbitrary files.
+const DOCUMENT_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+];
+
+const documentUpload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  fileFilter: (req, file, cb) => {
+    if (DOCUMENT_TYPES.includes(file.mimetype)) {
+      return cb(null, true);
+    }
+    cb(new AppError('Unsupported file type. Allowed: PDF, Word, Excel.', 400), false);
+  }
+});
 
 // @route   GET /api/documents
-// @desc    List all documents (optional ?category= filter)
+// @desc    List all documents (optional ?category= filter), paginated
 // @access  Private (any logged-in member)
 router.get(
   '/',
@@ -31,11 +49,19 @@ router.get(
     const filter = {};
     if (req.query.category) filter.category = req.query.category;
 
-    const documents = await Document.find(filter)
-      .sort({ createdAt: -1 })
-      .populate('uploadedBy', 'username fullName');
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
 
-    res.json(documents);
+    const [documents, total] = await Promise.all([
+      Document.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate('uploadedBy', 'username fullName'),
+      Document.countDocuments(filter)
+    ]);
+
+    res.json({ documents, page, totalPages: Math.ceil(total / limit) || 1, total });
   })
 );
 
@@ -59,11 +85,17 @@ router.post(
 
     const { title, description, category } = req.body;
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'documents',
-      resource_type: 'raw'
-    });
-    fs.unlinkSync(req.file.path);
+    let result;
+    try {
+      result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'documents',
+        resource_type: 'raw'
+      });
+    } finally {
+      // Always clean up the local temp file, even if the Cloudinary upload throws —
+      // otherwise a failed upload leaks the temp file forever.
+      fs.unlinkSync(req.file.path);
+    }
 
     const document = await Document.create({
       title,

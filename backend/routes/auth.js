@@ -9,10 +9,11 @@ const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const sendEmail = require('../utils/sendEmail');
 const logAudit = require('../utils/auditLog');
+const notify = require('../utils/notify');
 
 const signToken = (user) =>
   jwt.sign(
-    { user: { id: user.id, role: user.role } },
+    { user: { id: user.id, role: user.role, tokenVersion: user.tokenVersion } },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -55,6 +56,16 @@ router.post(
       role: 'member',
       status: 'pending'
     });
+
+    const admins = await User.find({ role: 'admin', status: 'approved' });
+    for (const admin of admins) {
+      notify({
+        recipientId: admin.id,
+        type: 'new_signup',
+        title: 'New member awaiting approval',
+        body: `${fullName} (${email}) just signed up.`
+      }).catch(() => {});
+    }
 
     res.status(201).json({
       msg: 'Account created. An admin needs to approve it before you can log in.',
@@ -102,8 +113,19 @@ router.get(
   protect,
   authorize('admin'),
   asyncHandler(async (req, res) => {
-    const users = await User.find({ status: 'pending' }).sort({ createdAt: -1 });
-    res.json(users);
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const filter = { status: 'pending' };
+    const total = await User.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({ users, page, totalPages, total });
   })
 );
 
@@ -120,6 +142,12 @@ router.put(
     user.status = 'approved';
     await user.save();
     logAudit(req.user.id, 'approved_member', 'User', user.id);
+    notify({
+      recipientId: user.id,
+      type: 'account_approved',
+      title: 'Your account is approved',
+      body: 'You can now log in to the HDIL-IPCA member portal.'
+    }).catch(() => {});
     res.json({ msg: 'User approved', user });
   })
 );
@@ -248,7 +276,7 @@ router.put(
     user.password = req.body.password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
-    await user.save();
+    await user.save(); // pre-save hook bumps tokenVersion + passwordChangedAt since password is modified
 
     res.json({ token: signToken(user), role: user.role, msg: 'Password updated' });
   })
@@ -278,15 +306,24 @@ router.put(
     if (fullName) user.fullName = fullName;
     if (phone !== undefined) user.phone = phone;
 
+    let passwordChanged = false;
     if (newPassword) {
       if (!currentPassword || !(await user.matchPassword(currentPassword))) {
         throw new AppError('Current password is incorrect', 400);
       }
       user.password = newPassword;
+      passwordChanged = true;
     }
 
-    await user.save();
-    res.json({ msg: 'Profile updated' });
+    await user.save(); // pre-save hook bumps tokenVersion + passwordChangedAt since password is modified
+
+    // Changing the password invalidates the token that was just used to make this
+    // request (tokenVersion no longer matches) — issue a fresh one so the client
+    // doesn't get logged out mid-session for changing their own password.
+    res.json({
+      msg: 'Profile updated',
+      token: passwordChanged ? signToken(user) : undefined
+    });
   })
 );
 
@@ -298,8 +335,19 @@ router.get(
   protect,
   authorize('admin'),
   asyncHandler(async (req, res) => {
-    const users = await User.find({ status: { $ne: 'pending' } }).sort({ createdAt: -1 });
-    res.json(users);
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const filter = { status: { $ne: 'pending' } };
+    const total = await User.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({ users, page, totalPages, total });
   })
 );
 
@@ -316,7 +364,15 @@ router.delete(
     }
     const user = await User.findById(req.params.id);
     if (!user) throw new AppError('User not found', 404);
+
+    const ownsListing = await require('../models/Industry').exists({ owner: req.params.id });
+    if (ownsListing) {
+      throw new AppError('This user still owns business listings. Reassign or remove them first.', 400);
+    }
+
     await user.deleteOne();
+    await require('../models/PushSubscription').deleteMany({ user: req.params.id });
+    await require('../models/Notification').deleteMany({ recipient: req.params.id });
     logAudit(req.user.id, 'deleted_member', 'User', user.id, { email: user.email });
     res.json({ msg: 'User deleted' });
   })

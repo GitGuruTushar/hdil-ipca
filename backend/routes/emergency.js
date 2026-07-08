@@ -75,6 +75,7 @@ router.delete(
     const contact = await EmergencyContact.findById(req.params.id);
     if (!contact) throw new AppError('Emergency contact not found', 404);
     await contact.deleteOne();
+    await ServiceRating.deleteMany({ contact: req.params.id });
     res.json({ msg: 'Emergency contact removed' });
   })
 );

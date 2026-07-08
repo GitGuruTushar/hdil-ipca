@@ -36,6 +36,15 @@ const protect = asyncHandler(async (req, res, next) => {
     return next(new AppError('Account has been disabled', 403));
   }
 
+  // A version counter (bumped on every password change, see User's pre-save hook)
+  // rather than a timestamp comparison — avoids second-resolution rounding races
+  // between a token's JWT `iat` and a password-change timestamp landing in the same
+  // wall-clock second, which a naive timestamp comparison gets wrong in one direction
+  // or the other no matter which way the inequality is written.
+  if (decoded.user.tokenVersion !== user.tokenVersion) {
+    return next(new AppError('Password was changed, please log in again', 401));
+  }
+
   req.user = user;
   next();
 });
