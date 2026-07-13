@@ -4,12 +4,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { site } from "@/content/site";
+import { pickLang } from "@/utils/localizedContent";
 import { MaskLines, Counter, EASE_EXPO } from "@/components/site/motion";
 import { PillButton, Kicker } from "@/components/site/ui";
 
-export default function HomeHero() {
-  const { hero } = site.home;
+const bp = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+const FALLBACK = {
+  eyebrow: "HDIL Industrial Park · Virar (East)",
+  titleLead: "Where Virar",
+  titleEm: "builds.",
+  sub: "600+ businesses. One address. One voice.",
+  primaryCtaLabel: "Explore the federation",
+  secondaryCtaLabel: "Our story",
+  image: `${bp}/home/hero.jpg`,
+  imageAlt: "Buildings of the HDIL Industrial Park with IPCA billboards",
+};
+
+// `data` is the CMS's SiteContent.home document (fetched once by HomeContent);
+// `stats` is the same document's stats array, shared with StatsBand below it.
+export default function HomeHero({ data, lang, stats }) {
   const reduce = useReducedMotion();
   const fadeUp = (delay) => ({
     initial: reduce ? false : { opacity: 0, y: 18 },
@@ -17,7 +31,22 @@ export default function HomeHero() {
     transition: { duration: 0.5, delay, ease: EASE_EXPO },
   });
 
-  const chipStats = site.stats.slice(1); // buildings, galas, members
+  const p = (field) => pickLang(field, lang);
+  const hero = {
+    eyebrow: p(data?.heroKicker) || FALLBACK.eyebrow,
+    titleLead: p(data?.heroTitleLead) || FALLBACK.titleLead,
+    titleEm: p(data?.heroTitleEm) || FALLBACK.titleEm,
+    sub: p(data?.heroSubtitle) || FALLBACK.sub,
+    primaryCta: { label: p(data?.heroPrimaryCtaLabel) || FALLBACK.primaryCtaLabel, href: data?.heroPrimaryCtaHref || "/about" },
+    secondaryCtaLabel: p(data?.heroSecondaryCtaLabel) || FALLBACK.secondaryCtaLabel,
+    secondaryCtaHref: data?.heroSecondaryCtaHref || "/about",
+    image: data?.heroImageUrl || FALLBACK.image,
+    imageAlt: p(data?.heroImageAlt) || FALLBACK.imageAlt,
+  };
+
+  // Buildings/galas/members chips — skips the first ("Years") stat by design,
+  // matching the 3-chip overlay this layout was built for.
+  const chipStats = (stats || []).slice(1);
 
   return (
     <section className="mx-auto max-w-site px-5 pt-32 md:px-8 md:pt-44">
@@ -51,8 +80,8 @@ export default function HomeHero() {
             <PillButton href={hero.primaryCta.href}>
               {hero.primaryCta.label}
             </PillButton>
-            <PillButton href="/about" glass>
-              Our story
+            <PillButton href={hero.secondaryCtaHref} glass>
+              {hero.secondaryCtaLabel}
             </PillButton>
           </motion.div>
           <motion.p
@@ -87,13 +116,13 @@ export default function HomeHero() {
             className="glass glass-shadow absolute -bottom-6 left-4 flex gap-6 rounded-2xl px-5 py-3.5 md:-left-4 md:gap-8 md:px-7 md:py-4"
             {...fadeUp(0.75)}
           >
-            {chipStats.map((s) => (
-              <span key={s.label}>
+            {chipStats.map((s, i) => (
+              <span key={i}>
                 <span className="block font-display text-lg font-bold text-ink md:text-xl">
                   <Counter to={s.value} suffix={s.suffix} />
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-body">
-                  {s.short}
+                  {p(s.short)}
                 </span>
               </span>
             ))}

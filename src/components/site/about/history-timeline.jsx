@@ -62,9 +62,11 @@ export default function HistoryTimeline({ timeline }) {
             <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.15em] text-madder lg:mt-0">
               {era.year}
             </p>
-            <h3 className="mt-2 font-display text-xl font-bold leading-tight text-ink md:text-2xl">
-              {era.title}
-            </h3>
+            {era.title && (
+              <h3 className="mt-2 font-display text-xl font-bold leading-tight text-ink md:text-2xl">
+                {era.title}
+              </h3>
+            )}
             <p className="mt-2.5 max-w-md text-[15px] leading-relaxed text-body">
               {era.text}
             </p>

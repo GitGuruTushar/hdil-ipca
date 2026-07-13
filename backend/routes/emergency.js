@@ -6,6 +6,7 @@ const ServiceRating = require('../models/ServiceRating');
 const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const { parseLocalizedField } = require('../utils/localizedField');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -25,9 +26,12 @@ router.get(
 );
 
 const contactFields = [
-  check('name', 'Name is required').not().isEmpty(),
+  check('name').custom((value) => {
+    if (!parseLocalizedField(value).en.trim()) throw new Error('Name (English) is required');
+    return true;
+  }),
   check('number', 'Number is required').not().isEmpty(),
-  check('category', 'Category is required').isIn(['Emergency', 'Service Provider', 'Other'])
+  check('category', 'Category is required').isIn(['Emergency', 'Park', 'Service Provider', 'Other'])
 ];
 
 // @route   POST /api/emergency
@@ -39,8 +43,11 @@ router.post(
   contactFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
-    const { name, number, category } = req.body;
-    const contact = await EmergencyContact.create({ name, number, category });
+    const { number, category, available247 } = req.body;
+    const name = parseLocalizedField(req.body.name);
+    const note = parseLocalizedField(req.body.note);
+    const hours = parseLocalizedField(req.body.hours);
+    const contact = await EmergencyContact.create({ name, number, category, note, hours, available247: Boolean(available247) });
     res.status(201).json(contact);
   })
 );
@@ -57,8 +64,13 @@ router.put(
     const contact = await EmergencyContact.findById(req.params.id);
     if (!contact) throw new AppError('Emergency contact not found', 404);
 
-    const { name, number, category } = req.body;
-    Object.assign(contact, { name, number, category });
+    const { number, category, available247 } = req.body;
+    contact.name = parseLocalizedField(req.body.name);
+    contact.note = parseLocalizedField(req.body.note);
+    contact.hours = parseLocalizedField(req.body.hours);
+    contact.number = number;
+    contact.category = category;
+    contact.available247 = Boolean(available247);
     await contact.save();
 
     res.json(contact);
@@ -111,7 +123,7 @@ router.get(
   authorize('admin'),
   asyncHandler(async (req, res) => {
     const ratings = await ServiceRating.find({ contact: req.params.id })
-      .populate('member', 'username fullName')
+      .populate('member', 'username fullName profilePicture')
       .sort({ createdAt: -1 });
 
     const average = ratings.length

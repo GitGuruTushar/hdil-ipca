@@ -6,13 +6,19 @@ const mongoose = require('mongoose');
 const SiteContentSchema = new mongoose.Schema({
   page: {
     type: String,
-    enum: ['home', 'about', 'contact'],
+    enum: ['home', 'about', 'contact', 'gallery', 'updates', 'helpline'],
     required: [true, 'Please specify a page'],
     unique: true
   },
   data: {
     type: mongoose.Schema.Types.Mixed,
     default: {}
+  },
+  // Bumped whenever the field contract in utils/siteContentFields.js changes shape,
+  // so callers can detect a stale document instead of silently rendering missing fields.
+  schemaVersion: {
+    type: Number,
+    default: 1
   },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,

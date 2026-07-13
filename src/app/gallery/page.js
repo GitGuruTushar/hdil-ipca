@@ -1,22 +1,22 @@
-import { PageHero } from "@/components/site/ui";
+import PageHeroCms from "@/components/site/page-hero-cms";
 import GalleryAlbums from "@/components/site/gallery/albums";
-import { site } from "@/content/site";
 
 export const metadata = {
   title: "Gallery",
-  description: site.gallery.hero.sub,
+  description: "Events, works and everyday life across the park.",
+};
+
+const FALLBACK = {
+  eyebrow: "Gallery",
+  titleLead: "The park,",
+  titleEm: "framed.",
+  sub: "Events, works and everyday life across the park.",
 };
 
 export default function GalleryPage() {
-  const { hero } = site.gallery;
   return (
     <>
-      <PageHero
-        eyebrow={hero.eyebrow}
-        titleLead={hero.titleLead}
-        titleEm={hero.titleEm}
-        sub={hero.sub}
-      />
+      <PageHeroCms page="gallery" fallback={FALLBACK} />
       <GalleryAlbums />
     </>
   );

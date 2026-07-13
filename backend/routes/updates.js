@@ -10,12 +10,34 @@ const sanitizeRichText = require('../utils/sanitizeRichText');
 const logAudit = require('../utils/auditLog');
 const cloudinary = require('../utils/cloudinary');
 const { upload, enforceSizeLimits, IMAGE_TYPES } = require('../config/upload');
+const broadcastPush = require('../utils/broadcastPush');
+const { parseLocalizedField } = require('../utils/localizedField');
+const normalizeExternalUrl = require('../utils/normalizeUrl');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     throw new AppError(errors.array().map((e) => e.msg).join(', '), 400);
   }
+};
+
+// Rich-text content needs a short plain-text preview for the push notification payload.
+const excerptFromHtml = (html, maxLength = 140) => {
+  const text = (html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trimEnd()}…`;
+};
+
+// Public announcements have no single recipient, so a freshly-published Update is
+// broadcast to every push subscriber (members and anonymous PWA installs alike)
+// instead of going through utils/notify.js. Fire-and-forget: never let a push
+// failure block or fail the request that published the content.
+const broadcastPublishedUpdate = (update) => {
+  broadcastPush({
+    title: update.title.en,
+    body: excerptFromHtml(update.content.en),
+    link: '/'
+  }).catch((err) => console.error('broadcastPush for update failed:', err));
 };
 
 const uploadMediaToCloudinary = async (files) => {
@@ -54,7 +76,7 @@ router.get(
       { $or: [{ status: { $ne: 'scheduled' } }, { publishAt: { $lte: new Date() } }] }
     ];
 
-    const updates = await Update.find(filter).sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
+    const updates = await Update.find(filter).sort({ createdAt: -1 }).populate('createdBy', 'username fullName profilePicture');
     res.json(updates);
   })
 );
@@ -67,7 +89,7 @@ router.get(
   protect,
   authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
-    const updates = await Update.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
+    const updates = await Update.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName profilePicture');
     res.json(updates);
   })
 );
@@ -75,8 +97,14 @@ router.get(
 const contentFields = [
   check('type', 'Type is required').isIn(['news', 'announcement', 'blogs']),
   check('category', 'Category must be maintenance, events, achievements, or general').optional().isIn(['maintenance', 'events', 'achievements', 'general']),
-  check('title', 'Title is required').not().isEmpty(),
-  check('content', 'Content is required').not().isEmpty(),
+  check('title').custom((value) => {
+    if (!parseLocalizedField(value).en.trim()) throw new Error('Title (English) is required');
+    return true;
+  }),
+  check('content').custom((value) => {
+    if (!parseLocalizedField(value).en.trim()) throw new Error('Content (English) is required');
+    return true;
+  }),
   check('status', 'Status must be draft, scheduled, or published').optional().isIn(['draft', 'scheduled', 'published']),
   check('publishAt', 'publishAt must be a valid date').optional().isISO8601(),
   check('redirectUrl')
@@ -100,7 +128,9 @@ router.post(
   contentFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
-    const { type, category, title, content, redirectUrl, status, publishAt } = req.body;
+    const { type, category, redirectUrl, status, publishAt } = req.body;
+    const title = parseLocalizedField(req.body.title);
+    const parsedContent = parseLocalizedField(req.body.content);
 
     const files = [...(req.files?.images || []), ...(req.files?.video || [])];
     const { images, videoUrl } = files.length ? await uploadMediaToCloudinary(files) : { images: [], videoUrl: undefined };
@@ -109,14 +139,22 @@ router.post(
       type,
       category,
       title,
-      content: sanitizeRichText(content),
+      content: {
+        en: sanitizeRichText(parsedContent.en),
+        hi: sanitizeRichText(parsedContent.hi),
+        mr: sanitizeRichText(parsedContent.mr)
+      },
       images,
       videoUrl,
-      redirectUrl: type === 'blogs' ? redirectUrl : undefined,
+      redirectUrl: type === 'blogs' ? normalizeExternalUrl(redirectUrl) : undefined,
       status,
       publishAt,
       createdBy: req.user.id
     });
+
+    if (update.status === 'published') {
+      broadcastPublishedUpdate(update);
+    }
 
     res.status(201).json(update);
   })
@@ -135,13 +173,19 @@ router.put(
     runValidation(req);
     const update = await Update.findById(req.params.id);
     if (!update) throw new AppError('Update not found', 404);
+    const wasPublished = update.status === 'published';
 
-    const { type, category, title, content, redirectUrl, status, publishAt } = req.body;
+    const { type, category, redirectUrl, status, publishAt } = req.body;
+    const parsedContent = parseLocalizedField(req.body.content);
     update.type = type;
     if (category) update.category = category;
-    update.title = title;
-    update.content = sanitizeRichText(content);
-    update.redirectUrl = type === 'blogs' ? redirectUrl : undefined;
+    update.title = parseLocalizedField(req.body.title);
+    update.content = {
+      en: sanitizeRichText(parsedContent.en),
+      hi: sanitizeRichText(parsedContent.hi),
+      mr: sanitizeRichText(parsedContent.mr)
+    };
+    update.redirectUrl = type === 'blogs' ? normalizeExternalUrl(redirectUrl) : undefined;
     if (status !== undefined) update.status = status;
     if (publishAt !== undefined) update.publishAt = publishAt;
 
@@ -153,6 +197,11 @@ router.put(
     }
 
     await update.save();
+
+    if (update.status === 'published' && !wasPublished) {
+      broadcastPublishedUpdate(update);
+    }
+
     res.json(update);
   })
 );
@@ -167,7 +216,7 @@ router.delete(
     const update = await Update.findById(req.params.id);
     if (!update) throw new AppError('Update not found', 404);
     await update.deleteOne();
-    logAudit(req.user.id, 'deleted_update', 'Update', update.id, { title: update.title });
+    logAudit(req.user.id, 'deleted_update', 'Update', update.id, { title: update.title.en });
     res.json({ msg: 'Update removed' });
   })
 );

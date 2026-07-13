@@ -1,12 +1,9 @@
 const mongoose = require('mongoose');
+const { localizedFieldSchema } = require('../utils/localizedField');
 
 const AlbumSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Please add a title'],
-    trim: true,
-    maxlength: [150, 'Title can not be more than 150 characters']
-  },
+  title: localizedFieldSchema({ required: [true, 'Please add a title'], maxlength: [150, 'Title can not be more than 150 characters'] }),
+  description: localizedFieldSchema({ maxlength: [500, 'Description can not be more than 500 characters'] }),
   eventDate: {
     type: Date,
     required: [true, 'Please add an event date']
@@ -30,7 +27,7 @@ const AlbumSchema = new mongoose.Schema({
       enum: ['image', 'video'],
       required: true
     },
-    caption: String
+    caption: localizedFieldSchema()
   }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

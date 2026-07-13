@@ -1,0 +1,1487 @@
+{
+  "shared": {
+    "nav": {
+      "groupOverview": "Overview",
+      "groupMessages": "Messages",
+      "groupContent": "Content",
+      "groupCommunity": "Community",
+      "groupPeople": "People",
+      "groupSystem": "System",
+      "dashboard": "Dashboard",
+      "messages": "Messages",
+      "updatesNews": "Updates & news",
+      "notices": "Notices",
+      "gallery": "Gallery",
+      "documents": "Documents",
+      "workshops": "Workshops",
+      "pollsFeedback": "Polls & feedback",
+      "grievances": "Grievances",
+      "vacancies": "Vacancies",
+      "members": "Members",
+      "directory": "Directory",
+      "dues": "Dues",
+      "emergencyRatings": "Emergency & ratings",
+      "contactMessages": "Contact messages",
+      "auditLog": "Audit log",
+      "home": "Home",
+      "myBusiness": "My business",
+      "more": "More",
+      "typeBusiness": "Business",
+      "typeNews": "News",
+      "typeVacancy": "Vacancy",
+      "typeEmergency": "Emergency",
+      "brandName": "HDIL-IPCA",
+      "closeMenu": "Close menu",
+      "openMenu": "Open menu",
+      "logout": "Log out",
+      "welcomeBackName": "Welcome back,",
+      "welcomeBack": "Welcome back",
+      "ownerLabel": "Owner",
+      "tenantLabel": "Tenant",
+      "federationMember": "Federation member",
+      "countOverflow": "9+",
+      "justNow": "just now",
+      "minutesAgoSuffix": "m ago",
+      "hoursAgoSuffix": "h ago",
+      "daysAgoSuffix": "d ago",
+      "notifications": "Notifications",
+      "markAllRead": "Mark all read",
+      "loading": "Loading…",
+      "allCaughtUp": "You’re all caught up.",
+      "searchPlaceholder": "Search everything…",
+      "searchShortcutHint": "⌘K",
+      "searching": "Searching…",
+      "noMatchesPrefix": "No matches for “",
+      "noMatchesSuffix": "”."
+    },
+    "widgets": {
+      "pagination": {
+        "pageLabel": "Page",
+        "ofLabel": "of",
+        "totalSuffix": "total",
+        "previousPage": "Previous page",
+        "nextPage": "Next page"
+      },
+      "confirmDialog": {
+        "title": "Are you sure?",
+        "confirmLabel": "Delete",
+        "cancelButton": "Cancel",
+        "workingLabel": "Working…"
+      }
+    },
+    "forms": {
+      "chipInput": {
+        "placeholder": "Add a keyword and press Enter…",
+        "removeLabel": "Remove",
+        "addAnotherPlaceholder": "Add another…"
+      },
+      "richTextEditor": {
+        "boldLabel": "Bold",
+        "italicLabel": "Italic",
+        "headingLabel": "Heading",
+        "bulletListLabel": "Bullet list",
+        "numberedListLabel": "Numbered list",
+        "linkUrlPrompt": "Link URL",
+        "linkLabel": "Link"
+      },
+      "workshopCalendar": {
+        "previousMonthLabel": "Previous month",
+        "nextMonthLabel": "Next month",
+        "dow": {
+          "mon": "Mon",
+          "tue": "Tue",
+          "wed": "Wed",
+          "thu": "Thu",
+          "fri": "Fri",
+          "sat": "Sat",
+          "sun": "Sun"
+        },
+        "moreLabel": "more"
+      },
+      "qrCheckinPanel": {
+        "reminderSentTitle": "Reminder sent",
+        "reminderFailedTitle": "Couldn't send reminder",
+        "registeredLabel": "registered",
+        "checkedInLabel": "checked in",
+        "qrInstructions": "Print or display at the venue — each attendee scans with their own phone to self-check-in.",
+        "loadingCode": "Loading check-in code…",
+        "sendReminderButton": "Send reminder now",
+        "checkedInToastTitle": "Checked in",
+        "checkInFailedTitle": "Couldn't check them in",
+        "closeManualCheckinButton": "Close manual check-in",
+        "openManualCheckinButton": "+ Manual check-in",
+        "searchPlaceholder": "Search by name, username, or email…",
+        "loadingMembers": "Loading members…",
+        "noMatches": "No matches.",
+        "checkingInEllipsis": "…",
+        "checkInLabel": "Check in"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Here's what's happening across the federation.",
+      "metrics": {
+        "businessListings": "Business listings",
+        "members": "Members",
+        "openVacancies": "Open vacancies",
+        "pendingDues": "Pending dues",
+        "pendingApprovals": "Pending approvals"
+      },
+      "attention": {
+        "heading": "Needs your attention",
+        "loading": "Loading…",
+        "emptyState": {
+          "title": "All caught up",
+          "description": "No pending approvals, open grievances, or new messages right now."
+        },
+        "signedUpSuffix": "signed up",
+        "awaitingApproval": "Awaiting approval",
+        "fromPrefix": "From",
+        "aMember": "a member",
+        "messageFromPrefix": "Message from"
+      },
+      "timeAgo": {
+        "justNow": "just now",
+        "minutesSuffix": "m ago",
+        "hoursSuffix": "h ago",
+        "daysSuffix": "d ago"
+      },
+      "quickActions": {
+        "heading": "Quick actions",
+        "items": {
+          "updates": "Updates & news",
+          "notices": "Notices",
+          "workshops": "Workshops",
+          "members": "Members"
+        }
+      },
+      "updates": {
+        "title": "Updates & news",
+        "description": "Publish news, announcements, and blog posts for members.",
+        "newButton": "New update",
+        "toast": {
+          "loadError": {
+            "title": "Couldn't load updates"
+          },
+          "tooManyImages": {
+            "title": "Up to 5 images allowed",
+            "description": "Only the first 5 were kept."
+          },
+          "titleRequired": "Title is required",
+          "contentRequired": "Content is required",
+          "redirectUrlRequired": "Redirect URL is required for blog posts",
+          "publishDateRequired": "Pick a publish date/time for scheduled updates",
+          "updateSaved": "Update saved",
+          "updateCreated": "Update created",
+          "saveError": {
+            "title": "Couldn't save update"
+          },
+          "updateDeleted": "Update deleted",
+          "deleteError": {
+            "title": "Couldn't delete update"
+          }
+        },
+        "form": {
+          "editHeading": "Edit update",
+          "newHeading": "New update",
+          "cancelButton": "Cancel",
+          "typeLabel": "Type",
+          "categoryLabel": "Category",
+          "titleLabel": "Title",
+          "titlePlaceholder": "Update title",
+          "contentLabel": "Content",
+          "contentPlaceholder": "Write the update…",
+          "redirectUrlLabel": "Redirect URL",
+          "redirectUrlPlaceholder": "https://…",
+          "keywordsLabel": "Keywords",
+          "statusLabel": "Status",
+          "publishAtLabel": "Publish at",
+          "imagesLabel": "Images (up to 5)",
+          "imagesHelp": "Uploading new images replaces all current images.",
+          "videoLabel": "Video",
+          "currentVideoLink": "Current video ↗",
+          "videoHelp": "Uploading a new video replaces the current one.",
+          "savingButton": "Saving…",
+          "saveChangesButton": "Save changes",
+          "createButton": "Create update"
+        },
+        "typeOptions": {
+          "news": "News",
+          "announcement": "Announcement",
+          "blogs": "Blog post"
+        },
+        "categoryOptions": {
+          "general": "General",
+          "maintenance": "Maintenance",
+          "events": "Events",
+          "achievements": "Achievements"
+        },
+        "statusOptions": {
+          "draft": "Draft",
+          "scheduled": "Scheduled",
+          "published": "Published"
+        },
+        "emptyState": {
+          "title": "No updates yet",
+          "description": "Create your first news post, announcement, or blog entry.",
+          "newButton": "+ New update"
+        },
+        "table": {
+          "headers": {
+            "title": "Title",
+            "status": "Status",
+            "category": "Category",
+            "created": "Created",
+            "actions": "Actions"
+          },
+          "editAriaLabel": "Edit",
+          "deleteAriaLabel": "Delete",
+          "editButton": "Edit",
+          "deleteButton": "Delete"
+        },
+        "deleteDialog": {
+          "title": "Delete this update?",
+          "description": "will be removed permanently. This can't be undone.",
+          "confirmButton": "Delete"
+        }
+      },
+      "notices": {
+        "title": "Notices",
+        "description": "Time-bound announcements targeted to specific buildings, galas, or occupancy types.",
+        "newButton": "New notice",
+        "toast": {
+          "loadError": {
+            "title": "Couldn't load notices"
+          },
+          "titleRequired": "Title is required",
+          "contentRequired": "Content is required",
+          "expiryRequired": "An expiry date is required",
+          "publishDateRequired": "Pick a publish date/time for scheduled notices",
+          "noticeSaved": "Notice saved",
+          "noticeCreated": "Notice created",
+          "saveError": {
+            "title": "Couldn't save notice"
+          },
+          "noticeDeleted": "Notice deleted",
+          "deleteError": {
+            "title": "Couldn't delete notice"
+          }
+        },
+        "form": {
+          "editHeading": "Edit notice",
+          "newHeading": "New notice",
+          "cancelButton": "Cancel",
+          "titleLabel": "Title",
+          "titlePlaceholder": "Notice title",
+          "contentLabel": "Content",
+          "contentPlaceholder": "Write the notice…",
+          "expiresAtLabel": "Expires at",
+          "targetAudienceLabel": "Target audience",
+          "targetBuildingLabel": "Target building (optional)",
+          "targetBuildingPlaceholder": "e.g. 4",
+          "targetGalaLabel": "Target gala (optional)",
+          "targetGalaPlaceholder": "e.g. 2",
+          "statusLabel": "Status",
+          "publishAtLabel": "Publish at",
+          "savingButton": "Saving…",
+          "saveChangesButton": "Save changes",
+          "createButton": "Create notice"
+        },
+        "audienceOptions": {
+          "everyone": "Everyone",
+          "owners": "Owners",
+          "tenants": "Tenants"
+        },
+        "statusOptions": {
+          "draft": "Draft",
+          "scheduled": "Scheduled",
+          "published": "Published"
+        },
+        "emptyState": {
+          "title": "No notices yet",
+          "description": "Create a targeted notice for owners, tenants, or specific buildings.",
+          "newButton": "+ New notice"
+        },
+        "table": {
+          "headers": {
+            "title": "Title",
+            "status": "Status",
+            "targeting": "Targeting",
+            "expires": "Expires",
+            "actions": "Actions"
+          },
+          "buildingPrefix": "Bldg",
+          "galaPrefix": "Gala",
+          "expiredPrefix": "Expired",
+          "expiresPrefix": "Expires",
+          "editAriaLabel": "Edit",
+          "deleteAriaLabel": "Delete",
+          "editButton": "Edit",
+          "deleteButton": "Delete"
+        },
+        "deleteDialog": {
+          "title": "Delete this notice?",
+          "description": "will be removed permanently. This can't be undone.",
+          "confirmButton": "Delete"
+        }
+      }
+    },
+    "media": {
+      "gallery": {
+        "itemCountSingular": "item",
+        "itemCountPlural": "items",
+        "deleteAlbumAriaLabel": "Delete",
+        "toast": {
+          "loadAlbumsFailed": "Failed to load albums",
+          "titleDateRequired": "Title and event date are required",
+          "maxFilesAllowed": "Maximum 20 files allowed",
+          "albumCreated": "Album created",
+          "createAlbumFailed": "Failed to create album",
+          "saveCaptionFailed": "Failed to save caption",
+          "itemRemoved": "Item removed",
+          "removeItemFailed": "Failed to remove item",
+          "albumDeleted": "Album deleted",
+          "deleteAlbumFailed": "Failed to delete album"
+        },
+        "title": "Gallery",
+        "description": "Event albums shared with members.",
+        "newAlbumButton": "+ New album",
+        "emptyState": {
+          "title": "No albums yet",
+          "description": "Create your first album to start sharing event photos and videos with members."
+        },
+        "form": {
+          "dialogTitle": "New album",
+          "dialogDescription": "Add event photos or videos — up to 20 files.",
+          "titleLabel": "Title",
+          "titlePlaceholder": "e.g. Annual General Meeting 2026",
+          "eventDateLabel": "Event date",
+          "categoryLabel": "Category",
+          "categoryPlaceholder": "e.g. Workshop",
+          "keywordsLabel": "Keywords",
+          "mediaLabel": "Photos / videos",
+          "selectedLabel": "selected",
+          "maxFilesWarning": "— maximum 20 files",
+          "cancelButton": "Cancel",
+          "creatingButton": "Creating…",
+          "createButton": "Create album"
+        },
+        "detail": {
+          "captionPlaceholder": "Add a caption…",
+          "removeButton": "Remove",
+          "emptyItems": "No photos or videos in this album yet."
+        },
+        "confirm": {
+          "deleteAlbumTitle": "Delete album?",
+          "deleteAlbumAndAll": "and all",
+          "deleteAlbumItemsSuffix": "items will be permanently removed.",
+          "deleteAlbumConfirmLabel": "Delete album",
+          "removeItemTitle": "Remove this item?",
+          "removeItemDescription": "This photo or video will be permanently removed from the album.",
+          "removeItemConfirmLabel": "Remove"
+        }
+      },
+      "documents": {
+        "toast": {
+          "loadFailed": "Couldn't load documents",
+          "titleRequired": "Title is required",
+          "fileRequired": "A file is required",
+          "uploaded": "Document uploaded",
+          "uploadFailed": "Couldn't upload document",
+          "deleted": "Document deleted",
+          "deleteFailed": "Couldn't delete document"
+        },
+        "title": "Documents",
+        "description": "Bylaws, minutes, circulars, and other files shared with members.",
+        "uploadButton": "Upload document",
+        "emptyState": {
+          "title": "No documents yet",
+          "descriptionFiltered": "No documents in this category yet. Try a different filter or upload a new one.",
+          "descriptionDefault": "Upload your first document to share it with members.",
+          "uploadButton": "+ Upload document"
+        },
+        "table": {
+          "title": "Title",
+          "category": "Category",
+          "uploadedBy": "Uploaded by",
+          "date": "Date",
+          "actions": "Actions"
+        },
+        "downloadAriaLabel": "Download",
+        "deleteAriaLabel": "Delete",
+        "downloadButton": "Download",
+        "deleteButton": "Delete",
+        "form": {
+          "dialogTitle": "Upload document",
+          "dialogDescription": "PDF, Word, or Excel files up to 20MB, shared with members.",
+          "titleLabel": "Title",
+          "titlePlaceholder": "e.g. Society bylaws 2026",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "Optional — what this document contains…",
+          "categoryLabel": "Category",
+          "fileLabel": "File",
+          "cancelButton": "Cancel",
+          "uploadingButton": "Uploading…",
+          "submitButton": "Upload document"
+        },
+        "confirm": {
+          "deleteTitle": "Delete this document?",
+          "deleteDescriptionSuffix": "will be removed permanently. This can't be undone.",
+          "deleteConfirmLabel": "Delete document"
+        },
+        "category": {
+          "all": "All",
+          "bylaws": "Bylaws",
+          "minutes": "Minutes",
+          "circulars": "Circulars",
+          "other": "Other"
+        }
+      }
+    },
+    "community": {
+      "workshops": {
+        "title": "Workshops",
+        "description": "Schedule workshops, track registrations, and manage check-ins.",
+        "newWorkshopButton": "+ New workshop",
+        "loadingCalendar": "Loading calendar…",
+        "emptyState": {
+          "title": "Pick a workshop",
+          "description": "Select a day with a workshop on the calendar, or create a new one."
+        },
+        "closeDetailsAriaLabel": "Close details",
+        "attendanceLabel": "Attendance",
+        "refreshAttendanceAriaLabel": "Refresh attendance",
+        "registeredLabel": "Registered",
+        "checkedInLabel": "Checked in",
+        "loadingEllipsis": "Loading…",
+        "noneYet": "None yet.",
+        "editButton": "Edit",
+        "deleteButton": "Delete",
+        "upcomingHeading": "Upcoming workshops",
+        "noUpcoming": {
+          "title": "No upcoming workshops",
+          "description": "Schedule your first workshop to see it listed here."
+        },
+        "deleteDialog": {
+          "title": "Delete this workshop?",
+          "descriptionSuffix": "will be permanently removed, along with its registration and check-in records.",
+          "confirmLabel": "Delete workshop"
+        },
+        "toast": {
+          "loadError": "Couldn't load workshops",
+          "invalidDateTime": "Please choose a valid date and time",
+          "updated": "Workshop updated",
+          "created": "Workshop created",
+          "saveError": "Couldn't save workshop",
+          "deleted": "Workshop deleted",
+          "deleteError": "Couldn't delete workshop"
+        },
+        "form": {
+          "editTitle": "Edit workshop",
+          "createTitle": "New workshop",
+          "closeFormAriaLabel": "Close form",
+          "titleLabel": "Title",
+          "titlePlaceholder": "e.g. Digital marketing for small manufacturers",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "What will this workshop cover?",
+          "dateTimeLabel": "Date & time",
+          "capacityLabel": "Capacity",
+          "capacityPlaceholder": "e.g. 40",
+          "locationLabel": "Location",
+          "locationPlaceholder": "e.g. Federation hall, MIDC Bhosari",
+          "cancelButton": "Cancel",
+          "savingButton": "Saving…",
+          "saveChangesButton": "Save changes",
+          "createButton": "Create workshop"
+        }
+      },
+      "polls": {
+        "title": "Polls & feedback",
+        "description": "Run member polls and review submitted feedback.",
+        "newPollButton": "New poll",
+        "tabs": {
+          "polls": "Polls",
+          "feedback": "Feedback"
+        },
+        "emptyState": {
+          "title": "No polls yet",
+          "description": "Create your first poll to start gathering member input."
+        },
+        "feedbackFilters": {
+          "all": "All",
+          "new": "New",
+          "reviewed": "Reviewed"
+        },
+        "feedbackEmptyState": {
+          "title": "No feedback yet",
+          "description": "Feedback submitted by members will appear here for review."
+        },
+        "createDialog": {
+          "title": "New poll",
+          "description": "Ask members a multiple-choice question with an expiry date."
+        },
+        "editDialog": {
+          "title": "Edit poll",
+          "description": "Options cannot be edited here — changing them after votes are cast would invalidate existing results. Delete and recreate the poll if the options need to change.",
+          "optionsPrefix": "Options:"
+        },
+        "deleteDialog": {
+          "title": "Delete this poll?",
+          "descriptionSuffix": "will be permanently removed, along with all votes.",
+          "confirmLabel": "Delete poll"
+        },
+        "form": {
+          "questionLabel": "Question",
+          "questionPlaceholder": "e.g. Should we hold the AGM in person this year?",
+          "descriptionOptionalLabel": "Description (optional)",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "Add context for members…",
+          "optionsLabel": "Options",
+          "optionPlaceholderPrefix": "Option",
+          "removeOptionAriaLabel": "Remove option",
+          "addOptionButton": "Add option",
+          "expiresAtLabel": "Expires at",
+          "cancelButton": "Cancel",
+          "creatingButton": "Creating…",
+          "createButton": "Create poll",
+          "savingButton": "Saving…",
+          "saveChangesButton": "Save changes"
+        },
+        "card": {
+          "statusOpen": "Open",
+          "statusClosed": "Closed",
+          "closedEarly": "Closed early",
+          "endedPrefix": "Ended",
+          "expiresPrefix": "Expires",
+          "voteLabel": "vote",
+          "editButton": "Edit",
+          "closingButton": "Closing…",
+          "closeEarlyButton": "Close early",
+          "deleteButton": "Delete"
+        },
+        "feedbackRow": {
+          "unknownMember": "Unknown member",
+          "markReviewedButton": "Mark reviewed",
+          "showLess": "Show less",
+          "showMore": "Show more",
+          "adminNoteLabel": "Admin note: ",
+          "noteLabel": "Note (optional)",
+          "notePlaceholder": "Add an internal note about how this was handled…",
+          "saveButton": "Save",
+          "savingButton": "Saving…"
+        },
+        "toast": {
+          "loadPollsError": "Failed to load polls",
+          "questionRequired": "Question is required",
+          "optionsRequired": "At least two options are required",
+          "expiryRequired": "An expiry date/time is required",
+          "pollCreated": "Poll created",
+          "createPollError": "Failed to create poll",
+          "pollUpdated": "Poll updated",
+          "updatePollError": "Failed to update poll",
+          "pollClosed": "Poll closed",
+          "closePollError": "Failed to close poll",
+          "pollDeleted": "Poll deleted",
+          "deletePollError": "Failed to delete poll",
+          "loadFeedbackError": "Failed to load feedback",
+          "feedbackReviewed": "Feedback marked reviewed",
+          "updateFeedbackError": "Failed to update feedback"
+        }
+      }
+    },
+    "people": {
+      "grievances": {
+        "toasts": {
+          "loadErrorTitle": "Couldn't load grievances",
+          "updated": "Grievance updated",
+          "saveErrorTitle": "Couldn't save changes"
+        },
+        "title": "Grievances",
+        "description": "Member-filed grievances, sorted newest first.",
+        "loading": "Loading grievances…",
+        "emptyState": {
+          "filteredTitle": "No grievances match this filter",
+          "title": "No grievances yet",
+          "filteredDescription": "Try a different status, or clear the filter to see everything.",
+          "description": "Grievances filed by members will show up here as soon as one is submitted.",
+          "clearFilter": "Clear filter"
+        },
+        "unknownMember": "Unknown member",
+        "form": {
+          "descriptionLabel": "Description",
+          "statusLabel": "Status",
+          "adminResponseLabel": "Admin response",
+          "adminResponsePlaceholder": "Add a response the member will see…",
+          "saving": "Saving…",
+          "saveButton": "Save"
+        },
+        "filters": {
+          "all": "All",
+          "open": "Open",
+          "inProgress": "In progress",
+          "resolved": "Resolved"
+        }
+      },
+      "vacancies": {
+        "toasts": {
+          "loadErrorTitle": "Couldn't load vacancies",
+          "posted": "Vacancy posted",
+          "postErrorTitle": "Couldn't post vacancy",
+          "loadApplicantsErrorTitle": "Couldn't load applicants",
+          "closed": "Vacancy closed",
+          "closedDescription": "It no longer appears in this open-vacancies list.",
+          "closeErrorTitle": "Couldn't close vacancy",
+          "deleted": "Vacancy deleted",
+          "deleteErrorTitle": "Couldn't delete vacancy",
+          "updateApplicantErrorTitle": "Couldn't update applicant status"
+        },
+        "title": "Vacancies",
+        "description": "Only open vacancies with a future deadline are shown here — closed or expired postings are hidden from this list.",
+        "newVacancyButton": "+ New vacancy",
+        "loading": "Loading vacancies…",
+        "emptyState": {
+          "title": "No open vacancies",
+          "description": "Post a job opening for federation members to apply to."
+        },
+        "deadlineLabel": "Deadline",
+        "list": {
+          "applicantSingular": "applicant",
+          "applicantPlural": "applicants"
+        },
+        "createDialog": {
+          "title": "Post a new vacancy",
+          "description": "Visible to members immediately, until the deadline passes or you close it early."
+        },
+        "form": {
+          "titleLabel": "Title",
+          "titlePlaceholder": "e.g. Machine operator",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "Role, responsibilities, working hours…",
+          "eligibilityLabel": "Eligibility",
+          "eligibilityPlaceholder": "Experience, skills, qualifications required…",
+          "deadlineLabel": "Application deadline",
+          "cancelButton": "Cancel",
+          "posting": "Posting…",
+          "postButton": "Post vacancy"
+        },
+        "detail": {
+          "postedByLabel": "Posted by",
+          "closing": "Closing…",
+          "closeEarlyButton": "Close early",
+          "deleteButton": "Delete",
+          "applicantsHeading": "Applicants",
+          "loadingApplicants": "Loading applicants…",
+          "noApplicantsTitle": "No applicants yet",
+          "noApplicantsDescription": "Applications submitted for this vacancy will appear here.",
+          "viewResumeLink": "View resume"
+        },
+        "confirmDelete": {
+          "title": "Delete this vacancy?",
+          "description": "This permanently removes the vacancy and every application submitted to it. This can't be undone.",
+          "confirmButton": "Delete vacancy"
+        },
+        "applicationStatus": {
+          "new": "New",
+          "reviewed": "Reviewed",
+          "shortlisted": "Shortlisted",
+          "rejected": "Rejected"
+        }
+      },
+      "members": {
+        "toasts": {
+          "loadPendingErrorTitle": "Couldn't load pending approvals",
+          "loadMembersErrorTitle": "Couldn't load members",
+          "created": "Member created",
+          "createErrorTitle": "Couldn't create member",
+          "approvedSuffix": "approved",
+          "approveErrorTitle": "Couldn't approve member",
+          "rejected": "Registration rejected",
+          "rejectErrorTitle": "Couldn't reject registration",
+          "disabled": "Member disabled",
+          "reEnabled": "Member re-enabled",
+          "updateErrorTitle": "Couldn't update member",
+          "deleted": "Member deleted",
+          "deleteErrorTitle": "Couldn't delete member"
+        },
+        "title": "Members",
+        "description": "Approve new sign-ups and manage federation member accounts.",
+        "addMemberButton": "Add member",
+        "pendingHeading": "Pending approval",
+        "appliedLabel": "Applied",
+        "approving": "Approving…",
+        "approveButton": "Approve",
+        "rejectButton": "Reject",
+        "emptyState": {
+          "title": "No members yet",
+          "description": "Add the first member account directly, or wait for members to self-register from the login page.",
+          "addMemberButton": "+ Add member"
+        },
+        "table": {
+          "name": "Name",
+          "email": "Email",
+          "role": "Role",
+          "status": "Status",
+          "joined": "Joined",
+          "actions": "Actions"
+        },
+        "saving": "Saving…",
+        "enableButton": "Enable",
+        "disableButton": "Disable",
+        "deleteButton": "Delete",
+        "joinedLabel": "Joined",
+        "createDialog": {
+          "title": "Add a member",
+          "description": "Creates an account with immediate access — no approval step needed."
+        },
+        "form": {
+          "usernameLabel": "Username",
+          "usernamePlaceholder": "e.g. rpatel",
+          "fullNameLabel": "Full name",
+          "fullNamePlaceholder": "e.g. Rakesh Patel",
+          "emailLabel": "Email",
+          "emailPlaceholder": "name@example.com",
+          "phoneLabel": "Phone (optional)",
+          "phonePlaceholder": "e.g. 9876543210",
+          "passwordLabel": "Initial password",
+          "passwordPlaceholder": "At least 6 characters",
+          "roleLabel": "Role",
+          "cancelButton": "Cancel",
+          "creating": "Creating…",
+          "createButton": "Create member"
+        },
+        "confirmReject": {
+          "title": "Reject this registration?",
+          "description": "'s account request will be deleted. They can sign up again later.",
+          "confirmButton": "Reject registration"
+        },
+        "confirmDelete": {
+          "title": "Delete this member?",
+          "description": "will be permanently removed. This fails if they still own a business listing.",
+          "confirmButton": "Delete member"
+        },
+        "roleOptions": {
+          "member": "Member",
+          "moderator": "Moderator",
+          "admin": "Admin"
+        }
+      }
+    },
+    "system": {
+      "industries": {
+        "header": {
+          "title": "Directory",
+          "description": "Business listings members have created — verify and manage them here."
+        },
+        "filters": {
+          "searchPlaceholder": "Search name or description…",
+          "buildingPlaceholder": "Building number",
+          "typePlaceholder": "Business type"
+        },
+        "emptyState": {
+          "filteredTitle": "No listings match your filters",
+          "title": "No business listings yet",
+          "filteredDescription": "Try a different search term, or clear the filters above.",
+          "description": "Members can create their own business listings from the member dashboard."
+        },
+        "table": {
+          "business": "Business",
+          "type": "Type",
+          "owner": "Owner",
+          "location": "Location",
+          "verified": "Verified",
+          "actions": "Actions",
+          "buildingPrefix": "Bldg",
+          "galaPrefix": "Gala",
+          "editAriaLabel": "Edit",
+          "deleteAriaLabel": "Delete"
+        },
+        "mobile": {
+          "ownerPrefix": "Owner:",
+          "editButton": "Edit",
+          "deleteButton": "Delete"
+        },
+        "badge": {
+          "verified": "Verified",
+          "verifying": "Verifying…",
+          "verify": "Verify"
+        },
+        "toast": {
+          "loadErrorTitle": "Couldn't load the directory",
+          "verifiedTitle": "Marked as verified",
+          "unverifiedTitle": "Verification removed",
+          "verifyErrorTitle": "Couldn't update verification",
+          "updatedTitle": "Listing updated",
+          "saveErrorTitle": "Couldn't save changes",
+          "deletedTitle": "Listing deleted",
+          "deleteErrorTitle": "Couldn't delete listing"
+        },
+        "editDialog": {
+          "title": "Edit listing",
+          "description": "Update this business listing's details."
+        },
+        "form": {
+          "nameLabel": "Business name",
+          "typeLabel": "Business type",
+          "descriptionLabel": "Description",
+          "galaLabel": "Gala number",
+          "buildingLabel": "Building number",
+          "occupancyLabel": "Occupancy type",
+          "gstLabel": "GST information",
+          "contactLabel": "Contact number",
+          "keywordsLabel": "Keywords",
+          "photosLabel": "Replace photos (optional)",
+          "existingPhotoLabel": "existing photo",
+          "keepPhotosHint": "leave empty to keep them.",
+          "cancelButton": "Cancel",
+          "savingButton": "Saving…",
+          "saveButton": "Save changes"
+        },
+        "occupancy": {
+          "owner": "Owner",
+          "tenant": "Tenant"
+        },
+        "deleteDialog": {
+          "title": "Delete this listing?",
+          "description": "will be permanently removed. This can't be undone.",
+          "confirmLabel": "Delete listing"
+        }
+      },
+      "emergency": {
+        "categories": {
+          "emergency": "Emergency",
+          "serviceProvider": "Service Provider",
+          "other": "Other"
+        },
+        "toast": {
+          "loadErrorTitle": "Couldn't load contacts",
+          "addedTitle": "Contact added",
+          "addErrorTitle": "Couldn't add contact",
+          "updatedTitle": "Contact updated",
+          "updateErrorTitle": "Couldn't update contact",
+          "removedTitle": "Contact removed",
+          "deleteErrorTitle": "Couldn't delete contact",
+          "ratingsLoadErrorTitle": "Couldn't load ratings"
+        },
+        "header": {
+          "title": "Emergency & ratings",
+          "description": "Emergency numbers and service providers visible to members.",
+          "addButton": "+ Add contact"
+        },
+        "loading": "Loading contacts…",
+        "emptyState": {
+          "title": "No emergency contacts yet",
+          "description": "Add the first emergency number or service provider members can call."
+        },
+        "actions": {
+          "viewRatings": "View ratings",
+          "hideRatings": "Hide ratings",
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "editForm": {
+          "nameLabel": "Name",
+          "numberLabel": "Number",
+          "categoryLabel": "Category",
+          "cancelButton": "Cancel",
+          "savingButton": "Saving…",
+          "saveButton": "Save"
+        },
+        "ratings": {
+          "internalNote": "Internal only — ratings are never shown publicly, for accountability purposes.",
+          "loading": "Loading ratings…",
+          "countSuffix": "rating",
+          "none": "No ratings submitted yet.",
+          "unknownMember": "Unknown member"
+        },
+        "createDialog": {
+          "title": "Add emergency contact",
+          "description": "Visible to every member on the public emergency numbers page."
+        },
+        "createForm": {
+          "nameLabel": "Name",
+          "namePlaceholder": "e.g. Fire station",
+          "numberLabel": "Number",
+          "numberPlaceholder": "e.g. 101",
+          "categoryLabel": "Category",
+          "cancelButton": "Cancel",
+          "addingButton": "Adding…",
+          "addButton": "Add contact"
+        },
+        "deleteDialog": {
+          "title": "Delete this contact?",
+          "description": "This permanently removes the contact and every rating submitted for it. This can't be undone.",
+          "confirmLabel": "Delete contact"
+        }
+      },
+      "dues": {
+        "filters": {
+          "all": "All",
+          "paid": "Paid",
+          "pending": "Pending"
+        },
+        "header": {
+          "title": "Dues",
+          "description": "Track membership dues collected across periods.",
+          "addButton": "+ Add due"
+        },
+        "toast": {
+          "memberRequiredTitle": "Member ID is required",
+          "loadErrorTitle": "Couldn't load dues",
+          "addedTitle": "Due added",
+          "addErrorTitle": "Couldn't add due",
+          "markedPaidTitle": "Marked as paid",
+          "markedPendingTitle": "Marked as pending",
+          "statusErrorTitle": "Couldn't update status",
+          "removedTitle": "Due removed",
+          "deleteErrorTitle": "Couldn't delete due"
+        },
+        "loading": "Loading dues…",
+        "emptyState": {
+          "filteredTitle": "No dues match this filter",
+          "title": "No dues recorded yet",
+          "filteredDescription": "Try a different status, or clear the filter to see everything.",
+          "description": "Add a due record to start tracking membership payments.",
+          "clearFilterButton": "Clear filter"
+        },
+        "row": {
+          "unknownMember": "Unknown member",
+          "markPending": "Mark pending",
+          "markPaid": "Mark paid",
+          "saving": "Saving…",
+          "deleteButton": "Delete"
+        },
+        "createDialog": {
+          "title": "Add a due record",
+          "description": "Record a dues payment (or amount owed) for a member."
+        },
+        "createForm": {
+          "memberLabel": "Member ID",
+          "memberPlaceholder": "Paste the member's user ID",
+          "memberHint": "Paste the member's user ID from the Members page.",
+          "industryLabel": "Industry ID",
+          "optionalSuffix": "(optional)",
+          "industryPlaceholder": "Paste the industry ID, if applicable",
+          "periodLabel": "Period",
+          "periodPlaceholder": "e.g. July 2026",
+          "amountLabel": "Amount (₹)",
+          "amountPlaceholder": "e.g. 500",
+          "noteLabel": "Note",
+          "notePlaceholder": "Any additional context…",
+          "cancelButton": "Cancel",
+          "addingButton": "Adding…",
+          "addButton": "Add due"
+        },
+        "deleteDialog": {
+          "title": "Delete this due record?",
+          "description": "This permanently removes the record. This can't be undone.",
+          "confirmLabel": "Delete due"
+        }
+      }
+    },
+    "misc": {
+      "contactMessages": {
+        "pageTitle": "Contact messages",
+        "pageDescription": "Messages submitted through the public contact form.",
+        "filterAll": "All",
+        "filterNew": "New",
+        "filterRead": "Read",
+        "loading": "Loading messages…",
+        "emptyTitleFiltered": "No messages match this filter",
+        "emptyTitle": "No messages yet",
+        "emptyDescriptionFiltered": "Try a different status, or clear the filter to see everything.",
+        "emptyDescription": "Messages submitted through the public contact form will show up here.",
+        "clearFilter": "Clear filter",
+        "noDate": "—",
+        "markReadButton": "Mark read",
+        "markingButton": "Marking…",
+        "deleteButton": "Delete",
+        "deleteDialogTitle": "Delete this message?",
+        "deleteDialogDescription": "This permanently removes the message. This can't be undone.",
+        "deleteDialogConfirm": "Delete message",
+        "toastLoadErrorTitle": "Couldn't load messages",
+        "toastMarkReadSuccessTitle": "Marked as read",
+        "toastMarkReadErrorTitle": "Couldn't mark as read",
+        "toastDeleteSuccessTitle": "Message deleted",
+        "toastDeleteErrorTitle": "Couldn't delete message"
+      },
+      "auditLog": {
+        "pageTitle": "Audit log",
+        "pageDescription": "Every consequential admin action, in order.",
+        "filterAllTypes": "All types",
+        "filterUser": "User",
+        "filterNotice": "Notice",
+        "filterPoll": "Poll",
+        "filterUpdate": "Update",
+        "filterWorkshop": "Workshop",
+        "filterIndustry": "Industry",
+        "defaultAction": "Performed an action",
+        "unknownUser": "Unknown user",
+        "noDate": "—",
+        "justNow": "just now",
+        "secondsAgoSuffix": "s ago",
+        "minuteAgo": "minute ago",
+        "minutesAgo": "minutes ago",
+        "hourAgo": "hour ago",
+        "hoursAgo": "hours ago",
+        "dayAgo": "day ago",
+        "daysAgo": "days ago",
+        "weekAgo": "week ago",
+        "weeksAgo": "weeks ago",
+        "errorEmptyTitle": "Couldn't load the audit log",
+        "tryAgainButton": "Try again",
+        "emptyTitle": "No activity yet",
+        "emptyDescriptionFilteredPrefix": "No logged actions against \"",
+        "emptyDescriptionFilteredSuffix": "\" yet — try a different filter.",
+        "emptyDescription": "Consequential admin actions — approvals, edits, deletions — will show up here as they happen.",
+        "clearFilter": "Clear filter",
+        "toastLoadErrorTitle": "Couldn't load audit log"
+      }
+    }
+  },
+  "member": {
+    "home": {
+      "title": "Home",
+      "description": "Your federation activity at a glance.",
+      "poll": {
+        "title": "This week’s poll",
+        "loading": "Loading…",
+        "emptyState": {
+          "title": "No open polls right now",
+          "description": "Check back soon — new polls are posted regularly."
+        },
+        "expiresLabel": "Expires",
+        "votingButton": "Voting…",
+        "voteButton": "Vote",
+        "thanksMessage": "Thanks for sharing your vote.",
+        "toast": {
+          "voteRecorded": "Vote recorded",
+          "voteError": "Couldn't submit your vote",
+          "alreadyVoted": "You've already voted on this poll"
+        }
+      },
+      "feedback": {
+        "title": "Feedback",
+        "description": "Have a suggestion or concern? Tell us directly.",
+        "toast": {
+          "missingFields": "Please fill in both fields",
+          "sent": "Feedback sent — thank you",
+          "error": "Couldn't send feedback"
+        },
+        "form": {
+          "subjectLabel": "Subject",
+          "subjectPlaceholder": "e.g. Suggestion for next AGM",
+          "messageLabel": "Message",
+          "messagePlaceholder": "Your message…",
+          "sendingButton": "Sending…",
+          "sendButton": "Send feedback"
+        }
+      },
+      "upcomingWorkshops": {
+        "title": "Upcoming workshops",
+        "seeAll": "See all",
+        "loading": "Loading…",
+        "emptyState": {
+          "title": "No upcoming workshops",
+          "description": "New workshops will appear here once scheduled."
+        },
+        "toast": {
+          "registered": "You're registered",
+          "registerError": "Couldn't register",
+          "alreadyRegistered": "You're already registered for this workshop"
+        },
+        "registeredButton": "Registered ✓",
+        "registeringButton": "Registering…",
+        "registerButton": "Register"
+      },
+      "noticesPreview": {
+        "title": "Notices for you",
+        "seeAll": "See all",
+        "loading": "Loading…",
+        "emptyState": {
+          "title": "No notices right now",
+          "description": "Notices targeted to you will show up here."
+        }
+      },
+      "workshopsPage": {
+        "title": "Workshops",
+        "description": "Register for workshops and keep track of what's coming up.",
+        "toast": {
+          "loadError": "Couldn't load workshops",
+          "registered": "You're registered",
+          "registerError": "Couldn't register",
+          "alreadyRegistered": "You're already registered for this workshop",
+          "cancelled": "Registration cancelled",
+          "cancelError": "Couldn't cancel registration"
+        },
+        "emptyState": {
+          "title": "No workshops yet",
+          "description": "Scheduled workshops will appear here — check back soon."
+        },
+        "registerButton": "Register",
+        "cancellingButton": "Cancelling…",
+        "unregisterButton": "Unregister",
+        "registeringButton": "Registering…",
+        "fullButton": "Full",
+        "registeredLabel": "registered",
+        "fullBadge": "Full",
+        "pastWorkshopButton": "Past workshop"
+      },
+      "noticesPage": {
+        "title": "Notices",
+        "description": "Announcements from HDIL-IPCA targeted to you.",
+        "toast": {
+          "loadError": "Couldn't load notices"
+        },
+        "emptyState": {
+          "title": "No notices right now",
+          "description": "You're all caught up — check back later for announcements from HDIL-IPCA."
+        },
+        "buildingPrefix": "Bldg",
+        "galaPrefix": "Gala",
+        "expiredLabel": "Expired",
+        "expiresLabel": "Expires"
+      }
+    },
+    "more": {
+      "business": {
+        "occupancy": {
+          "owner": "Owner",
+          "tenant": "Tenant"
+        },
+        "toast": {
+          "loadError": "Couldn't load your business listing",
+          "tooManyImages": "Up to 5 images allowed",
+          "tooManyImagesDesc": "Only the first 5 were kept.",
+          "nameRequired": "Business name is required",
+          "typeRequired": "Business type is required",
+          "descriptionRequired": "Description is required",
+          "galaRequired": "Gala number is required",
+          "buildingRequired": "Building number is required",
+          "gstRequired": "GST information is required",
+          "contactRequired": "Contact number is required",
+          "updated": "Listing updated",
+          "created": "Listing created",
+          "saveError": "Couldn't save listing"
+        },
+        "title": "My business",
+        "description": "Manage your business listing in the federation directory.",
+        "addListing": "Add listing",
+        "form": {
+          "editTitle": "Edit listing",
+          "createTitle": "Create your listing",
+          "cancel": "Cancel",
+          "nameLabel": "Business name",
+          "namePlaceholder": "e.g. Shree Metal Works",
+          "typeLabel": "Business type",
+          "typePlaceholder": "e.g. CNC machining",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "What does your business do?",
+          "galaLabel": "Gala number",
+          "galaPlaceholder": "e.g. 2",
+          "buildingLabel": "Building number",
+          "buildingPlaceholder": "e.g. 4",
+          "occupancyLabel": "Occupancy",
+          "gstLabel": "GST information",
+          "gstPlaceholder": "GSTIN",
+          "contactLabel": "Contact number",
+          "contactPlaceholder": "e.g. 9876543210",
+          "keywordsLabel": "Keywords",
+          "keywordsHelp": "e.g. cnc machining, welding — helps people find you in search",
+          "imagesLabel": "Images (up to 5)",
+          "imagesHelp": "Uploading new images replaces all current images.",
+          "saving": "Saving…",
+          "saveChanges": "Save changes",
+          "createListing": "Create listing"
+        },
+        "emptyState": {
+          "title": "No business listing yet",
+          "description": "Create your listing so other members can find your business in the federation directory.",
+          "action": "+ Create your listing"
+        },
+        "verifiedBadge": "Verified business",
+        "buildingBadge": "Bldg",
+        "galaBadge": "Gala",
+        "gstLabel": "GST: ",
+        "contactLabel": "Contact: ",
+        "editListingButton": "Edit listing"
+      },
+      "title": "More",
+      "items": {
+        "grievances": {
+          "label": "Grievances",
+          "description": "File and track grievances with the federation"
+        },
+        "dues": {
+          "label": "Dues",
+          "description": "View your membership dues and payment status"
+        },
+        "documents": {
+          "label": "Documents",
+          "description": "Bylaws, minutes, circulars, and other files"
+        }
+      },
+      "grievances": {
+        "toast": {
+          "loadError": "Couldn't load your grievances",
+          "required": "Subject and description are required",
+          "filed": "Grievance filed",
+          "filedDesc": "The federation office has been notified.",
+          "fileError": "Couldn't file grievance"
+        },
+        "fileButton": "File a grievance",
+        "title": "Grievances",
+        "description": "File a grievance with the federation and track its status.",
+        "emptyState": {
+          "title": "No grievances yet",
+          "description": "If something needs the federation's attention, file a grievance and track its progress here."
+        },
+        "federationResponse": "Federation response",
+        "dialog": {
+          "title": "File a grievance",
+          "description": "Tell us what's wrong — the federation office will review and respond."
+        },
+        "form": {
+          "subjectLabel": "Subject",
+          "subjectPlaceholder": "e.g. Water leakage in common area",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "Describe the issue in detail…",
+          "cancel": "Cancel",
+          "filing": "Filing…",
+          "submit": "File grievance"
+        }
+      }
+    },
+    "misc": {
+      "dues": {
+        "loadError": "Couldn't load your dues",
+        "title": "Dues",
+        "description": "Your membership dues records from the federation.",
+        "pendingAcross": "pending across",
+        "record": "record",
+        "contactNotice": "Contact the federation office to clear outstanding dues.",
+        "emptyState": {
+          "title": "No dues records yet",
+          "description": "Your membership dues will appear here once the federation office records them."
+        }
+      },
+      "documents": {
+        "category": {
+          "bylaws": "Bylaws",
+          "minutes": "Minutes",
+          "circulars": "Circulars",
+          "other": "Other",
+          "all": "All"
+        },
+        "loadError": "Couldn't load documents",
+        "title": "Documents",
+        "description": "Bylaws, minutes, circulars, and other files shared by the federation.",
+        "emptyState": {
+          "title": "No documents yet",
+          "filteredDescription": "No documents in this category yet. Try a different filter.",
+          "description": "Documents shared by the federation office will appear here."
+        },
+        "table": {
+          "title": "Title",
+          "category": "Category",
+          "date": "Date",
+          "download": "Download"
+        },
+        "downloadAriaLabel": "Download",
+        "downloadButton": "Download"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to the member portal.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "forgotPasswordLink": "Forgot password?",
+      "passwordPlaceholder": "••••••••",
+      "errorFallback": "Login failed",
+      "submitLoading": "Logging in…",
+      "submitButton": "Log in",
+      "newMemberPrompt": "New member?",
+      "createAccountLink": "Create an account"
+    },
+    "signup": {
+      "errorFallback": "Could not create your account",
+      "successTitle": "Account created",
+      "successDescription": "An admin needs to approve your account before you can log in — you’ll be able to sign in as soon as that happens.",
+      "backToLoginLink": "Back to login",
+      "title": "Create your account",
+      "subtitle": "An admin reviews every new signup before it’s active.",
+      "fields": {
+        "fullName": "Full name",
+        "username": "Username",
+        "email": "Email",
+        "phone": "Phone",
+        "password": "Password",
+        "photoAdd": "Add a profile photo",
+        "photoChange": "Change photo",
+        "photoHelp": "Optional, but helps the admin recognize you.",
+        "buildingNumber": "Building number",
+        "galaNumber": "Gala number",
+        "occupancyType": "Occupancy",
+        "occupancyOwner": "Owner",
+        "occupancyTenant": "Tenant",
+        "businessName": "Business name",
+        "businessType": "Business type",
+        "businessTypePlaceholder": "e.g. CNC machining"
+      },
+      "submitLoading": "Creating account…",
+      "submitButton": "Create account",
+      "alreadyMemberPrompt": "Already a member?",
+      "loginLink": "Log in"
+    },
+    "forgotPassword": {
+      "sentTitle": "Check your email",
+      "confirmationPrefix": "If an account exists for ",
+      "confirmationSuffix": ", a reset link is on its way. It expires in an hour.",
+      "title": "Reset your password",
+      "subtitle": "We’ll email you a link to set a new one.",
+      "emailPlaceholder": "you@example.com",
+      "submitLoading": "Sending…",
+      "submitButton": "Send reset link",
+      "backToLoginLink": "Back to login"
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "subtitle": "Choose something you haven’t used before.",
+      "newPasswordPlaceholder": "New password",
+      "errorFallback": "Reset link is invalid or has expired",
+      "submitLoading": "Updating…",
+      "submitButton": "Set new password"
+    },
+    "checkin": {
+      "workingMessage": "Checking you in…",
+      "successTitle": "You’re checked in",
+      "errorTitle": "Check-in failed",
+      "errorFallback": "Couldn't check you in",
+      "dashboardLink": "Go to dashboard"
+    }
+  },
+  "live": {
+    "nav": {
+      "home": "Home",
+      "about": "About",
+      "contact": "Contact",
+      "ariaLabel": "CMS preview navigation"
+    },
+    "chrome": {
+      "previewBadge": "CMS preview — separate from the live site"
+    },
+    "common": {
+      "checkAgainButton": "Check again",
+      "tryAgainButton": "Try again",
+      "errorTitle": "Couldn't load this page"
+    },
+    "home": {
+      "loading": "Loading home content…",
+      "emptyState": {
+        "title": "Home content hasn't been seeded yet",
+        "description": "Site content for \"home\" hasn’t been added in the CMS yet. Seed it from the backend (scripts/seedSiteContent.js), then check again."
+      },
+      "toastTitle": "Couldn't load home content",
+      "errorFallback": "Couldn't load home content",
+      "introHeading": "About the park"
+    },
+    "about": {
+      "loading": "Loading about content…",
+      "emptyState": {
+        "title": "About content hasn't been seeded yet",
+        "description": "Site content for \"about\" hasn’t been added in the CMS yet. Seed it from the backend (scripts/seedSiteContent.js), then check again."
+      },
+      "toastTitle": "Couldn't load about content",
+      "errorFallback": "Couldn't load about content",
+      "visionKicker": "Our vision",
+      "historyHeading": "Our history",
+      "leadershipHeading": "Leadership"
+    },
+    "contact": {
+      "loading": "Loading contact content…",
+      "emptyState": {
+        "title": "Contact content hasn't been seeded yet",
+        "description": "Site content for \"contact\" hasn’t been added in the CMS yet. Seed it from the backend (scripts/seedSiteContent.js), then check again."
+      },
+      "toastTitle": "Couldn't load contact content",
+      "errorFallback": "Couldn't load contact content",
+      "kicker": "Get in touch",
+      "heroTitle": "We're here to help the park's owners and tenants",
+      "detailsHeading": "Contact details",
+      "noDetails": "No contact details have been added yet.",
+      "mapTitle": "Location map",
+      "callLabel": "Call the office",
+      "emailLabel": "Write to us",
+      "emailCopied": "Email copied",
+      "copyEmail": "Copy email address",
+      "copied": "Copied",
+      "visitLabel": "Visit",
+      "getDirections": "Get directions",
+      "loadMap": "Load map"
+    }
+  },
+  "vacancies": {
+    "title": "Vacancies",
+    "description": "Open job opportunities posted by federation members and staff.",
+    "postButton": "+ Post a vacancy",
+    "emptyState": {
+      "title": "No open vacancies right now",
+      "description": "New job opportunities are posted regularly — check back soon."
+    },
+    "common": {
+      "eligibilityLabel": "Eligibility",
+      "cancelButton": "Cancel"
+    },
+    "card": {
+      "applyByPrefix": "Apply by",
+      "postedByPrefix": "Posted by",
+      "applyButton": "Apply"
+    },
+    "applyModal": {
+      "titlePrefix": "Apply for",
+      "description": "Your details go straight to the person who posted this vacancy. No account needed.",
+      "nameLabel": "Your name",
+      "namePlaceholder": "Full name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "10-digit number",
+      "coverNoteLabel": "Cover note",
+      "optionalTag": "(optional)",
+      "coverNotePlaceholder": "Tell them why you're a good fit…",
+      "resumeLabel": "Resume",
+      "resumeOptionalTag": "(optional, PDF or Word)",
+      "selectedFilePrefix": "Selected:",
+      "submittingButton": "Submitting…",
+      "submitButton": "Submit application",
+      "successTitle": "Application submitted",
+      "successThanksPrefix": "Thanks",
+      "successMiddle": "— your application for",
+      "successSuffix": "has been sent. The poster will reach out if you’re a fit.",
+      "doneButton": "Done"
+    },
+    "createModal": {
+      "title": "Post a new vacancy",
+      "description": "Visible to everyone immediately, until the deadline passes.",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Machine operator",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Role, responsibilities, working hours…",
+      "eligibilityPlaceholder": "Experience, skills, qualifications required…",
+      "deadlineLabel": "Application deadline",
+      "postingButton": "Posting…",
+      "submitButton": "Post vacancy"
+    },
+    "toast": {
+      "loadErrorTitle": "Couldn't load vacancies",
+      "vacancyPostedTitle": "Vacancy posted",
+      "postErrorTitle": "Couldn't post vacancy",
+      "applyErrorTitle": "Couldn't submit application"
+    }
+  }
+}

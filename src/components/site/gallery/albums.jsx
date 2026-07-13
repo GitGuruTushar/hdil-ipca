@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Loader2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { site } from "@/content/site";
+import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
+import { pickLang } from "@/utils/localizedContent";
 import { EASE_EXPO } from "@/components/site/motion";
+import { useI18n } from "@/i18n/I18nProvider";
+import Pagination from "@/components/app/pagination";
+
+const LIMIT = 6;
+
+const fmtDate = (iso) => {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+};
 
 /* Clip-path + scale reveal used for every gallery image */
 function ClipReveal({ children, delay = 0, className }) {
@@ -40,10 +50,32 @@ const LAYOUTS = [
   ],
 ];
 
-export default function GalleryAlbums() {
-  const [open, setOpen] = useState(null); // { album: idx, img: idx }
+function GalleryAlbumsContent() {
+  const { lang: LANG } = useI18n();
+  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [albums, setAlbums] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [open, setOpen] = useState(null); // { album: idx, item: idx }
   const reduce = useReducedMotion();
-  const albums = site.gallery.albums;
+
+  useEffect(() => {
+    setStatus("loading");
+    axiosInstance
+      .get("/gallery", { params: { page, limit: LIMIT } })
+      .then((res) => {
+        setAlbums(res.data.albums || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotal(res.data.total || 0);
+        setStatus("ready");
+      })
+      .catch((err) => {
+        setErrorMsg(apiErrorMessage(err, "Couldn't load the gallery"));
+        setStatus("error");
+      });
+  }, [page]);
 
   useEffect(() => {
     if (!open) return;
@@ -63,60 +95,89 @@ export default function GalleryAlbums() {
   const step = (dir) =>
     setOpen((o) => {
       if (!o) return o;
-      const imgs = albums[o.album].images;
-      return { ...o, img: (o.img + dir + imgs.length) % imgs.length };
+      const its = albums[o.album].items;
+      return { ...o, item: (o.item + dir + its.length) % its.length };
     });
 
-  const current = open ? albums[open.album].images[open.img] : null;
+  const current = open ? albums[open.album].items[open.item] : null;
+
+  if (status === "loading") {
+    return (
+      <div className="mx-auto max-w-site px-5 pb-24 md:px-8 md:pb-36">
+        <div className="glass glass-shadow mt-10 flex flex-col items-center justify-center gap-3 rounded-[1.75rem] p-16 text-sm text-body">
+          <Loader2 className="h-5 w-5 animate-spin text-madder" />
+          Loading the gallery…
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="mx-auto max-w-site px-5 pb-24 md:px-8 md:pb-36">
+        <div className="glass glass-shadow mt-10 flex flex-col items-center justify-center gap-3 rounded-[1.75rem] p-16 text-sm text-body">
+          <AlertTriangle className="h-5 w-5 text-alarm" />
+          {errorMsg}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-site px-5 pb-24 md:px-8 md:pb-36">
+      {albums.length === 0 && <p className="mt-14 text-center text-body">No albums have been published yet.</p>}
+
       {albums.map((album, ai) => (
-        <section key={album.title} className="mt-14 md:mt-20">
+        <section key={album._id} className="mt-14 md:mt-20">
           <div className="mb-7 grid gap-4 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-7">
-              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-madder">
-                {album.date}
-              </p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-madder">{fmtDate(album.eventDate)}</p>
               <h2 className="mt-2 font-display text-2xl font-bold leading-tight tracking-[-0.015em] text-ink md:text-3xl">
-                {album.title}
+                {pickLang(album.title, LANG)}
               </h2>
             </div>
-            <p className="max-w-md text-sm leading-relaxed text-body lg:col-span-4 lg:col-start-9 lg:text-right">
-              {album.description}
-            </p>
+            {pickLang(album.description, LANG) && (
+              <p className="max-w-md text-sm leading-relaxed text-body lg:col-span-4 lg:col-start-9 lg:text-right">
+                {pickLang(album.description, LANG)}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-12">
-            {album.images.map((img, ii) => (
-              <ClipReveal
-                key={img.src + ii}
-                delay={ii * 0.06}
-                className={LAYOUTS[ai % 2][ii % 4]}
-              >
-                <button
-                  onClick={() => setOpen({ album: ai, img: ii })}
-                  className="group glass glass-shadow hover-lift block h-full w-full rounded-[1.5rem] p-2.5 text-left"
-                  aria-label={`Open photo: ${img.alt}`}
-                >
-                  <div className="relative h-[calc(100%-2.4rem)] min-h-[10rem] w-full overflow-hidden rounded-[1rem]">
-                    <Image
-                      src={img.src}
-                      alt={img.alt}
-                      fill
-                      sizes="(min-width: 1024px) 50vw, 100vw"
-                      className="object-cover transition-transform duration-500 ease-out-quint [@media(hover:hover)]:group-hover:scale-105"
-                    />
-                  </div>
-                  <span className="block px-2 pb-1 pt-2.5 text-[11px] font-bold uppercase tracking-[0.1em] text-body">
-                    {img.alt}
-                  </span>
-                </button>
-              </ClipReveal>
-            ))}
+            {album.items.map((item, ii) => {
+              const caption = pickLang(item.caption, LANG);
+              return (
+                <ClipReveal key={item._id || ii} delay={ii * 0.06} className={LAYOUTS[ai % 2][ii % 4]}>
+                  <button
+                    onClick={() => setOpen({ album: ai, item: ii })}
+                    className="group glass glass-shadow hover-lift block h-full w-full rounded-[1.5rem] p-2.5 text-left"
+                    aria-label={`Open ${item.type}: ${caption || pickLang(album.title, LANG)}`}
+                  >
+                    <div className="relative h-[calc(100%-2.4rem)] min-h-[10rem] w-full overflow-hidden rounded-[1rem] bg-ivory">
+                      {item.type === "video" ? (
+                        <video src={item.url} className="h-full w-full object-cover" muted playsInline />
+                      ) : (
+                        <Image
+                          src={item.url}
+                          alt={caption}
+                          fill
+                          sizes="(min-width: 1024px) 50vw, 100vw"
+                          className="object-cover transition-transform duration-500 ease-out-quint [@media(hover:hover)]:group-hover:scale-105"
+                        />
+                      )}
+                    </div>
+                    {caption && (
+                      <span className="block px-2 pb-1 pt-2.5 text-[11px] font-bold uppercase tracking-[0.1em] text-body">{caption}</span>
+                    )}
+                  </button>
+                </ClipReveal>
+              );
+            })}
           </div>
         </section>
       ))}
+
+      {albums.length > 0 && <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} />}
 
       <p className="mt-14 text-center text-xs font-semibold text-body/70 md:mt-20">
         Photographs from federation events and works across the park.
@@ -133,11 +194,11 @@ export default function GalleryAlbums() {
             transition={{ duration: 0.3, ease: EASE_EXPO }}
             role="dialog"
             aria-modal="true"
-            aria-label={`${albums[open.album].title} — photo viewer`}
+            aria-label={`${pickLang(albums[open.album].title, LANG)} — photo viewer`}
           >
             <div className="flex items-center justify-between p-5 md:p-8">
               <p className="font-display text-lg font-bold md:text-xl">
-                {open.img + 1} <span className="text-white/50">/ {albums[open.album].images.length}</span>
+                {open.item + 1} <span className="text-white/50">/ {albums[open.album].items.length}</span>
               </p>
               <button
                 onClick={() => setOpen(null)}
@@ -158,7 +219,7 @@ export default function GalleryAlbums() {
               </button>
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={open.img}
+                  key={open.item}
                   className="relative h-[60svh] w-full max-w-5xl"
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
@@ -172,13 +233,17 @@ export default function GalleryAlbums() {
                   exit={reduce ? undefined : { opacity: 0 }}
                   transition={{ duration: 0.25 }}
                 >
-                  <Image
-                    src={current.src}
-                    alt={current.alt}
-                    fill
-                    sizes="100vw"
-                    className="pointer-events-none select-none object-contain"
-                  />
+                  {current.type === "video" ? (
+                    <video src={current.url} controls autoPlay className="h-full w-full object-contain" />
+                  ) : (
+                    <Image
+                      src={current.url}
+                      alt={pickLang(current.caption, LANG)}
+                      fill
+                      sizes="100vw"
+                      className="pointer-events-none select-none object-contain"
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
               <button
@@ -191,14 +256,16 @@ export default function GalleryAlbums() {
             </div>
 
             <div className="p-5 text-center md:p-8">
-              <p className="text-sm font-medium text-white/90">{current.alt}</p>
-              <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white/50">
-                {albums[open.album].title}
-              </p>
+              {pickLang(current.caption, LANG) && <p className="text-sm font-medium text-white/90">{pickLang(current.caption, LANG)}</p>}
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white/50">{pickLang(albums[open.album].title, LANG)}</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+}
+
+export default function GalleryAlbums() {
+  return <GalleryAlbumsContent />;
 }

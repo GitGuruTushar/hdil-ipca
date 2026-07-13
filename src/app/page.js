@@ -1,29 +1,10 @@
-import HomeHero from "@/components/site/home/hero";
-import {
-  StatsBand,
-  Intro,
-  IndustriesMarquee,
-  NewsTeaser,
-  GalleryTeaser,
-  HelplineStrip,
-} from "@/components/site/home/sections";
-import { site } from "@/content/site";
+import HomeContent from "@/components/site/home/home-content";
 
 export const metadata = {
   title: "HDIL-IPCA — HDIL Industrial Park, Virar (East)",
-  description: site.home.hero.sub,
+  description: "HDIL-IPCA is the federation of the HDIL Industrial Park, Chandansar, Virar (East) — 600+ businesses, one address, one voice.",
 };
 
 export default function Home() {
-  return (
-    <>
-      <HomeHero />
-      <StatsBand />
-      <Intro />
-      <IndustriesMarquee />
-      <NewsTeaser />
-      <GalleryTeaser />
-      <HelplineStrip />
-    </>
-  );
+  return <HomeContent />;
 }

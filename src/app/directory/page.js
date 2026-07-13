@@ -1,272 +1,480 @@
 "use client";
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, ArrowLeft, ArrowRight, ExternalLink, MapPin, Phone, Mail, Clock } from 'lucide-react';
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import Heading from '../components/heading';
-import industries from './data';
-import Header from '../components/header';
+import { useCallback, useEffect, useState } from "react";
+import { Building2, CheckCircle2, Loader2, AlertTriangle, X, Search, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
+import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
+import { pickLang } from "@/utils/localizedContent";
+import { PageHero } from "@/components/site/ui";
+import { Stagger, Item } from "@/components/site/motion";
+import EmptyState from "@/components/app/empty-state";
+import Pagination from "@/components/app/pagination";
+import { useI18n } from "@/i18n/I18nProvider";
 
-const BusinessDirectory = () => {
-  const [selectedIndustry, setSelectedIndustry] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+const LIMIT = 12;
+const tel = (n) => `tel:${String(n || "").replace(/[^\d+]/g, "")}`;
 
-  const handleProductClick = (product) => {
-    setSelectedProduct(product);
-    setShowProductModal(true);
-  };
-
-  const closeModal = () => {
-    setShowProductModal(false);
-    setSelectedProduct(null);
-  };
-
-  const DetailView = ({ industry, onClose }) => {
-    const [currentProductIndex, setCurrentProductIndex] = useState(0);
-
-    return (
-      <div className="bg-gray-50 p-4">
-        <div className="max-w-[1200px] mx-auto p-4 sm:p-6">
-          {/* Top Navigation */}
-          <div className="flex justify-between items-center mb-6">
-            <button
-              onClick={onClose}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft size={20} />
-              Back to Directory
-            </button>
+function BusinessCard({ industry, lang, onOpen }) {
+  const { t } = useI18n();
+  const image = industry.images?.[0];
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(industry)}
+      className="group glass glass-shadow hover-lift block h-full w-full rounded-[1.5rem] p-3 text-left"
+    >
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-ivory">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <Building2 className="h-8 w-8 text-body/40" strokeWidth={1.5} />
           </div>
+        )}
+        {industry.verified && (
+          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-ok">
+            <CheckCircle2 className="h-3 w-3" strokeWidth={2.5} />
+            {t("directory.verifiedBadge", "Verified")}
+          </span>
+        )}
+      </div>
+      <div className="px-2 pb-1 pt-3.5">
+        <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-madder truncate">
+          {pickLang(industry.businessType, lang)}
+        </p>
+        <h3 className="mt-1.5 font-display text-[15px] font-bold leading-snug text-ink">{pickLang(industry.name, lang)}</h3>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-body line-clamp-2">{pickLang(industry.description, lang)}</p>
+        <p className="mt-2.5 text-[11px] font-semibold text-body/70">
+          {t("directory.buildingPrefix", "Bldg")} {industry.buildingNumber} &middot; {t("directory.galaPrefix", "Gala")} {industry.galaNumber}
+        </p>
+      </div>
+    </button>
+  );
+}
 
-          {/* Image Carousel */}
-          <div className="relative h-[500px] mb-8">
-            <img
-              src={industry.images[currentImageIndex]}
-              alt={industry.name}
-              className="w-full h-full object-cover rounded-xl shadow-lg"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 rounded-xl" />
-            <button
-              onClick={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : industry.images.length - 1)}
-              className="absolute top-1/2 left-4 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <button
-              onClick={() => setCurrentImageIndex(prev => prev < industry.images.length - 1 ? prev + 1 : 0)}
-              className="absolute top-1/2 right-4 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
-            >
-              <ArrowRight size={20} />
-            </button>
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {industry.images.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentImageIndex(i)}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${i === currentImageIndex ? 'bg-white scale-110' : 'bg-white/50'}`}
-                />
-              ))}
-            </div>
+function DetailModal({ industry, lang, onClose, onViewFullPage }) {
+  const { t } = useI18n();
+
+  useEffect(() => {
+    if (!industry) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [industry]);
+
+  if (!industry) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-start justify-center bg-ink/50 px-4 py-16 md:py-24"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        data-lenis-prevent
+        className="glass glass-shadow max-h-[calc(100vh-8rem)] w-full max-w-xl overflow-y-auto rounded-[1.75rem] bg-white/95 p-6 md:max-h-[calc(100vh-12rem)] md:p-8"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-madder">{pickLang(industry.businessType, lang)}</p>
+            <h2 className="mt-1.5 font-display text-2xl font-bold leading-tight text-ink">{pickLang(industry.name, lang)}</h2>
+            {industry.verified && (
+              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-ok/10 px-2.5 py-1 text-[11px] font-bold text-ok">
+                <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                {t("directory.verifiedBadge", "Verified")}
+              </span>
+            )}
           </div>
-
-          {/* Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-8">
-            {/* Main Content */}
-            <div className="space-y-8">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <h1 className="text-2xl font-bold">{industry.name}</h1>
-                  {industry.vacancy.available && (
-                    <span className="px-3 py-1 bg-red-50 text-red-500 rounded-full text-sm font-medium">
-                      Now Hiring
-                    </span>
-                  )}
-                </div>
-                <p className="text-gray-600 leading-relaxed">{industry.description}</p>
-              </div>
-
-              {/* Materials Section */}
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">Materials Used</h2>
-                <div className="flex flex-wrap gap-2">
-                  {industry.materials.map((material, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
-                      {material}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Sidebar */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <Phone className="text-gray-400" size={20} />
-                    <div>
-                      <p className="font-medium">Phone</p>
-                      <p className="text-gray-600">{industry.contactNumber}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Mail className="text-gray-400" size={20} />
-                    <div>
-                      <p className="font-medium">Email</p>
-                      <p className="text-gray-600">{industry.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <MapPin className="text-gray-400" size={20} />
-                    <div>
-                      <p className="font-medium">Address</p>
-                      <p className="text-gray-600">{industry.address}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Products Section */}
-        <div className="mt-4 max-w-4xl mx-auto bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold">Products</h3>
-            <div className="flex gap-2">
-              <button
-                className="p-2 bg-orange-300 rounded-full hover:bg-orange-400"
-                id="product-prev"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                className="p-2 bg-orange-300 rounded-full hover:bg-orange-400"
-                id="product-next"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <Swiper
-            modules={[Navigation, Pagination]}
-            spaceBetween={20}
-            slidesPerView={4}
-            navigation={{
-              prevEl: "#product-prev",
-              nextEl: "#product-next",
-            }}
-            pagination={{ clickable: true }}
-            breakpoints={{
-              320: { slidesPerView: 1 },
-              640: { slidesPerView: 2 },
-              768: { slidesPerView: 3 },
-              1024: { slidesPerView: 4 },
-            }}
-            className="relative mt-4"
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("directory.closeAriaLabel", "Close")}
+            className="tap-shrink flex h-10 w-10 flex-none items-center justify-center rounded-full border border-line bg-white"
           >
-            {industry.products?.map((product, index) => (
-              <SwiperSlide key={index}>
-                <div onClick={() => handleProductClick(product)} className="relative group cursor-pointer">
-                  <img
-                    src={product.images[0]}  
-                    alt={product.name}
-                    className="w-full h-64 object-cover rounded"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="flex items-center justify-center h-full text-white text-lg font-semibold">
-                      {product.name}
-                    </div>
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+            <X size={16} />
+          </button>
         </div>
-        {showProductModal && selectedProduct && (
-          <div className="fixed w-full inset-0 flex items-center justify-center bg-black/50 z-50">
-            <div className="bg-white p-6 rounded-lg max-w-lg mx-auto relative">
-              <button 
-                onClick={closeModal}  
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
-              >
-                <X size={20} />
-              </button>
-              <img 
-                src={selectedProduct.images[0]} 
-                alt={selectedProduct.name} 
-                className="w-full h-64 object-cover rounded"
-              />
-              <h3 className="text-xl font-semibold mt-4">{selectedProduct.name}</h3>
-              <p className="text-gray-600 mt-2">{selectedProduct.description}</p>
-              <p className="text-gray-800 font-medium mt-2">Price: ₹{selectedProduct.price}</p>
+
+        {industry.images?.length > 0 && (
+          <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+            {industry.images.map((src, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={i} src={src} alt="" className="h-24 w-24 flex-none rounded-xl object-cover" />
+            ))}
+          </div>
+        )}
+
+        <p className="mt-5 text-sm leading-relaxed text-body">{pickLang(industry.description, lang)}</p>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 text-[12.5px]">
+          <div className="rounded-xl bg-ivory p-3">
+            <p className="font-bold text-ink">{t("directory.buildingLabel", "Building")}</p>
+            <p className="text-body">{industry.buildingNumber}</p>
+          </div>
+          <div className="rounded-xl bg-ivory p-3">
+            <p className="font-bold text-ink">{t("directory.galaLabel", "Gala")}</p>
+            <p className="text-body">{industry.galaNumber}</p>
+          </div>
+        </div>
+
+        {industry.materials?.length > 0 && (
+          <div className="mt-5">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-body/70 mb-1.5">{t("directory.materialsLabel", "Materials")}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {industry.materials.map((m, i) => (
+                <span key={m + i} className="rounded-full bg-[#E5E3FB] px-2.5 py-1 text-[11px] font-semibold text-[#4338CA]">
+                  {m}
+                </span>
+              ))}
             </div>
           </div>
         )}
 
-        {/* GST & Legal Section */}
-        <div className="bg-white rounded-xl p-6 shadow-sm max-w-4xl mx-auto my-8">
-          <h2 className="text-xl font-semibold mb-4">Business Information</h2>
-          <div className="flex flex-col gap-4">
-            <div>
-              <h3 className="font-medium text-gray-700">GST Number</h3>
-              <p className="text-gray-600 mt-1">{industry.gstInfo}</p>
+        {industry.products?.length > 0 && (
+          <div className="mt-5">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-body/70 mb-2">{t("directory.productsLabel", "Products")}</p>
+            <div className="space-y-2">
+              {industry.products.map((p, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 rounded-xl bg-ivory p-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold text-ink">{pickLang(p.name, lang)}</p>
+                    {pickLang(p.description, lang) && <p className="truncate text-[11.5px] text-body">{pickLang(p.description, lang)}</p>}
+                  </div>
+                  {p.price != null && <p className="flex-none text-[13px] font-bold text-ink">₹{Number(p.price).toLocaleString("en-IN")}</p>}
+                </div>
+              ))}
             </div>
-            {industry.vacancy.available && (
-              <div>
-                <h3 className="font-medium text-gray-700">Current Openings</h3>
-                <p className="text-gray-600 mt-1">{industry.vacancy.description}</p>
-              </div>
-            )}
           </div>
+        )}
+
+        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-line pt-5">
+          <a
+            href={tel(industry.contactNumber)}
+            className="tap-shrink inline-flex h-10 items-center gap-2 rounded-full bg-gradient-to-r from-madder to-grape px-5 text-[13px] font-bold text-white"
+          >
+            {t("directory.callButton", "Call")} {industry.contactNumber}
+          </a>
+          <button
+            type="button"
+            onClick={() => onViewFullPage(industry)}
+            className="tap-shrink inline-flex h-10 items-center gap-1.5 rounded-full border border-line bg-white px-5 text-[13px] font-bold text-ink"
+          >
+            {t("directory.viewFullPageButton", "View full page")} <ArrowRight size={14} />
+          </button>
+          <span className="text-[11.5px] text-body/70">
+            {t("directory.gstLabel", "GST:")} {industry.gstInfo}
+          </span>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+}
+
+// Full-page single-business view — rendered instead of the grid when the URL
+// carries ?id=<industryId>. A query param (not a /directory/[id] path
+// segment) so this stays reachable on GitHub Pages' static export, which
+// can't pre-render a page per future business listing.
+function BusinessDetailView({ id, onBack }) {
+  const { t } = useI18n();
+  const [status, setStatus] = useState("loading"); // loading | ready | notFound | error
+  const [industry, setIndustry] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    setStatus("loading");
+    axiosInstance
+      .get(`/industries/${id}`)
+      .then((res) => {
+        setIndustry(res.data);
+        setStatus("ready");
+      })
+      .catch((err) => {
+        if (err?.response?.status === 404) {
+          setStatus("notFound");
+          return;
+        }
+        setErrorMsg(apiErrorMessage(err, "Couldn't load this business"));
+        setStatus("error");
+      });
+  }, [id]);
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6">
-      {!selectedIndustry ? (
-        <>
-        <Header description={"United Diverse Industries to Propel India's Growth and Prosperity"} />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-20">
-            {industries.map((industry, idx) => (
-              <div
-                key={idx}
-                onClick={() => setSelectedIndustry(industry)}
-                className="group cursor-pointer"
+    <div className="mx-auto max-w-3xl px-5 pt-28 pb-24 md:px-8 md:pt-36 md:pb-36">
+      <button type="button" onClick={onBack} className="link-wipe inline-flex items-center gap-1.5 text-sm font-semibold text-madder">
+        <ArrowLeft size={15} /> {t("directory.backToDirectory", "Back to directory")}
+      </button>
+
+      {status === "loading" && (
+        <div className="glass glass-shadow mt-8 flex flex-col items-center justify-center gap-3 rounded-[1.75rem] p-16 text-sm text-body">
+          <Loader2 className="h-5 w-5 animate-spin text-madder" />
+          {t("directory.loading", "Loading the directory…")}
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className="glass glass-shadow mt-8 flex flex-col items-center justify-center gap-3 rounded-[1.75rem] p-16 text-sm text-body">
+          <AlertTriangle className="h-5 w-5 text-alarm" />
+          {errorMsg}
+        </div>
+      )}
+
+      {status === "notFound" && (
+        <div className="glass glass-shadow mt-8 rounded-[1.75rem]">
+          <EmptyState
+            icon={Sparkles}
+            title={t("directory.detail.notFoundTitle", "This listing isn't available")}
+            description={t("directory.detail.notFoundDescription", "It may have been removed. Try browsing the directory instead.")}
+            action={
+              <button
+                type="button"
+                onClick={onBack}
+                className="h-9 rounded-full bg-gradient-to-r from-madder to-grape px-4 text-[13px] font-bold text-white inline-flex items-center"
               >
-                <div className="aspect-square rounded-lg overflow-hidden mb-3">
-                  <img
-                    src={industry.images[0]}
-                    alt={industry.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h3 className="font-medium group-hover:text-red-500 transition-colors">
-                  {industry.name}
-                </h3>
-              </div>
-            ))}
+                {t("directory.backToDirectory", "Back to directory")}
+              </button>
+            }
+          />
+        </div>
+      )}
+
+      {status === "ready" && industry && (
+        <div className="glass glass-shadow mt-6 rounded-[1.75rem] p-6 md:p-10">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-madder">{pickLang(industry.businessType, "en")}</p>
+          <h1 className="mt-2 font-display text-[clamp(1.7rem,4vw,2.4rem)] font-bold leading-tight tracking-[-0.015em] text-ink">
+            {pickLang(industry.name, "en")}
+          </h1>
+          {industry.verified && (
+            <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-ok/10 px-2.5 py-1 text-[11px] font-bold text-ok">
+              <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+              {t("directory.verifiedBadge", "Verified")}
+            </span>
+          )}
+
+          {industry.images?.length > 0 ? (
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {industry.images.map((src, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={i} src={src} alt="" className="aspect-square w-full rounded-xl object-cover" />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-6 flex aspect-[3/1] w-full items-center justify-center rounded-xl bg-ivory">
+              <Building2 className="h-10 w-10 text-body/40" strokeWidth={1.5} />
+            </div>
+          )}
+
+          <p className="mt-6 text-base leading-relaxed text-body">{pickLang(industry.description, "en")}</p>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-4">
+            <div className="rounded-xl bg-ivory p-3.5">
+              <p className="font-bold text-ink">{t("directory.buildingLabel", "Building")}</p>
+              <p className="text-body">{industry.buildingNumber}</p>
+            </div>
+            <div className="rounded-xl bg-ivory p-3.5">
+              <p className="font-bold text-ink">{t("directory.galaLabel", "Gala")}</p>
+              <p className="text-body">{industry.galaNumber}</p>
+            </div>
+            <div className="rounded-xl bg-ivory p-3.5 col-span-2 sm:col-span-1">
+              <p className="font-bold text-ink">{t("directory.occupancyLabel", "Occupancy")}</p>
+              <p className="text-body capitalize">{industry.occupancyType}</p>
+            </div>
+            <div className="rounded-xl bg-ivory p-3.5 col-span-2 sm:col-span-1">
+              <p className="font-bold text-ink">{t("directory.gstLabel", "GST:")}</p>
+              <p className="truncate text-body">{industry.gstInfo}</p>
+            </div>
           </div>
-        </>
-      ) : (
-        <DetailView
-          industry={selectedIndustry}
-          onClose={() => setSelectedIndustry(null)}
-        />
+
+          {industry.materials?.length > 0 && (
+            <div className="mt-6">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-body/70">{t("directory.materialsLabel", "Materials")}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {industry.materials.map((m, i) => (
+                  <span key={m + i} className="rounded-full bg-[#E5E3FB] px-2.5 py-1 text-[11px] font-semibold text-[#4338CA]">
+                    {m}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {industry.products?.length > 0 && (
+            <div className="mt-6">
+              <p className="mb-2.5 text-[11px] font-bold uppercase tracking-wide text-body/70">{t("directory.productsLabel", "Products")}</p>
+              <div className="space-y-2.5">
+                {industry.products.map((p, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-xl bg-ivory p-3.5">
+                    {p.images?.[0] && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.images[0]} alt="" className="h-14 w-14 flex-none rounded-lg object-cover" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-semibold text-ink">{pickLang(p.name, "en")}</p>
+                      {pickLang(p.description, "en") && <p className="text-[12.5px] text-body">{pickLang(p.description, "en")}</p>}
+                    </div>
+                    {p.price != null && <p className="flex-none text-[14px] font-bold text-ink">₹{Number(p.price).toLocaleString("en-IN")}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-8 border-t border-line pt-6">
+            <a
+              href={tel(industry.contactNumber)}
+              className="tap-shrink inline-flex h-11 items-center gap-2 rounded-full bg-gradient-to-r from-madder to-grape px-6 text-[13.5px] font-bold text-white shadow-lg shadow-madder/25"
+            >
+              {t("directory.callButton", "Call")} {industry.contactNumber}
+            </a>
+          </div>
+        </div>
       )}
     </div>
   );
-};
+}
 
-export default BusinessDirectory;
+function DirectoryContent() {
+  const { t } = useI18n();
+  const [lang] = useState("en"); // public language switcher lands in Milestone 4
+
+  const [viewId, setViewId] = useState(undefined); // undefined = not yet read from URL, null = grid mode, string = detail mode
+
+  const [status, setStatus] = useState("loading"); // loading | ready | error
+  const [industries, setIndustries] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [selected, setSelected] = useState(null);
+
+  const [qInput, setQInput] = useState("");
+  const [q, setQ] = useState("");
+
+  // Reads ?id= (full-page view) and ?highlight= (open the quick-view popup,
+  // e.g. arriving from the site search bar) once on mount.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setViewId(params.get("id") || null);
+
+    const highlightId = params.get("highlight");
+    if (highlightId) {
+      axiosInstance
+        .get(`/industries/${highlightId}`)
+        .then((res) => setSelected(res.data))
+        .catch(() => {});
+    }
+  }, []);
+
+  const backToGrid = () => {
+    setViewId(null);
+    window.history.pushState(null, "", "/directory");
+  };
+
+  const viewFullPage = (industry) => {
+    setSelected(null);
+    setViewId(industry._id);
+    window.history.pushState(null, "", `/directory?id=${industry._id}`);
+  };
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setQ(qInput.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [qInput]);
+
+  const load = useCallback(() => {
+    setStatus("loading");
+    const params = { page, limit: LIMIT };
+    if (q) params.q = q;
+    axiosInstance
+      .get("/industries", { params })
+      .then((res) => {
+        setIndustries(res.data.industries || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotal(res.data.total || 0);
+        setStatus("ready");
+      })
+      .catch((err) => {
+        setErrorMsg(apiErrorMessage(err, "Couldn't load the directory"));
+        setStatus("error");
+      });
+  }, [page, q]);
+
+  useEffect(() => {
+    if (viewId === null) load();
+  }, [load, viewId]);
+
+  if (viewId === undefined) return null; // avoids a grid flash before the URL has been read
+
+  if (viewId) return <BusinessDetailView id={viewId} onBack={backToGrid} />;
+
+  return (
+    <>
+      <PageHero
+        eyebrow={t("directory.hero.eyebrow", "Business directory")}
+        titleLead={t("directory.hero.titleLead", "Every business,")}
+        titleEm={t("directory.hero.titleEm", "one search away.")}
+        sub={t("directory.hero.sub", "Search the entire federation — no login required.")}
+      />
+
+      <div className="mx-auto max-w-site px-5 pb-24 md:px-8 md:pb-36">
+        <div className="glass glass-shadow mt-8 flex items-center gap-2.5 rounded-full px-5 py-3.5 md:mt-10">
+          <Search className="h-4 w-4 flex-none text-body/70" strokeWidth={2} />
+          <input
+            value={qInput}
+            onChange={(e) => setQInput(e.target.value)}
+            placeholder={t("directory.searchPlaceholder", "Search by name, type, product, or material…")}
+            className="min-w-0 flex-1 bg-transparent text-[14px] text-ink outline-none placeholder:text-body/50"
+          />
+        </div>
+
+        {status === "loading" && (
+          <div className="glass glass-shadow mt-8 flex flex-col items-center justify-center gap-3 rounded-[1.75rem] p-16 text-sm text-body">
+            <Loader2 className="h-5 w-5 animate-spin text-madder" />
+            {t("directory.loading", "Loading the directory…")}
+          </div>
+        )}
+
+        {status === "error" && (
+          <div className="glass glass-shadow mt-8 flex flex-col items-center justify-center gap-3 rounded-[1.75rem] p-16 text-sm text-body">
+            <AlertTriangle className="h-5 w-5 text-alarm" />
+            {errorMsg}
+          </div>
+        )}
+
+        {status === "ready" && industries.length === 0 && (
+          <div className="glass glass-shadow mt-8 rounded-[1.75rem]">
+            <EmptyState
+              icon={Building2}
+              title={q ? t("directory.emptyState.filteredTitle", "No businesses match your search") : t("directory.emptyState.title", "No businesses listed yet")}
+              description={
+                q
+                  ? t("directory.emptyState.filteredDescription", "Try a different search term.")
+                  : t("directory.emptyState.description", "Members can list their business from the member dashboard.")
+              }
+            />
+          </div>
+        )}
+
+        {status === "ready" && industries.length > 0 && (
+          <>
+            <Stagger className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {industries.map((industry) => (
+                <Item key={industry._id}>
+                  <BusinessCard industry={industry} lang={lang} onOpen={setSelected} />
+                </Item>
+              ))}
+            </Stagger>
+            <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} />
+          </>
+        )}
+      </div>
+
+      <DetailModal industry={selected} lang={lang} onClose={() => setSelected(null)} onViewFullPage={viewFullPage} />
+    </>
+  );
+}
+
+export default function DirectoryPage() {
+  return <DirectoryContent />;
+}

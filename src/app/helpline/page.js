@@ -1,29 +1,23 @@
-import { PageHero } from "@/components/site/ui";
-import {
-  EmergencyNumbers,
-  ParkLines,
-  Providers,
-} from "@/components/site/helpline/sections";
-import { site } from "@/content/site";
+import PageHeroCms from "@/components/site/page-hero-cms";
+import HelplineSections from "@/components/site/helpline/sections";
 
 export const metadata = {
   title: "Emergency Helpline",
-  description: site.helpline.hero.sub,
+  description: "Every critical number for the park. Tap to call.",
+};
+
+const FALLBACK = {
+  eyebrow: "Emergency contacts · Helpline",
+  titleLead: "Help,",
+  titleEm: "one tap away.",
+  sub: "Every critical number for the park. Tap to call.",
 };
 
 export default function HelplinePage() {
-  const { hero } = site.helpline;
   return (
     <>
-      <PageHero
-        eyebrow={hero.eyebrow}
-        titleLead={hero.titleLead}
-        titleEm={hero.titleEm}
-        sub={hero.sub}
-      />
-      <EmergencyNumbers />
-      <ParkLines />
-      <Providers />
+      <PageHeroCms page="helpline" fallback={FALLBACK} />
+      <HelplineSections />
     </>
   );
 }

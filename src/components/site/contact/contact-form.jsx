@@ -2,34 +2,36 @@
 
 // Mailto-powered contact form: intent chips + three fields. On submit it
 // opens the visitor's email app pre-filled and swaps to a success state.
-// (Backend submission arrives with Phase 2 — see src/content/site.js.)
 
 import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { site } from "@/content/site";
+import { pickLang } from "@/utils/localizedContent";
 import { EASE_EXPO } from "@/components/site/motion";
 
-const FIELDS = {
-  name: {
-    label: "Your name",
-    type: "text",
-    autoComplete: "name",
-    required: true,
-    error: "Please tell us your name.",
-  },
-  phone: {
-    label: "Phone (optional)",
-    type: "tel",
-    autoComplete: "tel",
-    inputMode: "tel",
-    required: false,
-    error: "That phone number looks too short.",
-  },
-};
-
-export default function ContactForm() {
+// `data` is SiteContent.contact (intents/form* copy); `email`/`phone` are
+// SiteSettings.contactInfo (chrome-level, shared with the navbar/footer).
+export default function ContactForm({ data, lang, email, phone }) {
   const reduce = useReducedMotion();
-  const { intents, form } = site.contactPage;
+  const p = (field) => pickLang(field, lang);
+  const d = data || {};
+  const intents = (d.intents || []).map((i) => p(i)).filter(Boolean);
+
+  const FIELDS = {
+    name: {
+      label: p(d.formNameLabel) || "Your name",
+      type: "text",
+      autoComplete: "name",
+      error: p(d.formNameError) || "Please tell us your name.",
+    },
+    phone: {
+      label: p(d.formPhoneLabel) || "Phone (optional)",
+      type: "tel",
+      autoComplete: "tel",
+      inputMode: "tel",
+      error: p(d.formPhoneError) || "That phone number looks too short.",
+    },
+  };
+
   const [intent, setIntent] = useState(null);
   const [values, setValues] = useState({ name: "", phone: "", message: "" });
   const [errors, setErrors] = useState({});
@@ -40,7 +42,7 @@ export default function ContactForm() {
     if (key === "phone" && v.trim() && v.replace(/\D/g, "").length < 10)
       return FIELDS.phone.error;
     if (key === "message" && !v.trim())
-      return "Please write a short message.";
+      return p(d.formMessageError) || "Please write a short message.";
     return null;
   };
 
@@ -50,7 +52,7 @@ export default function ContactForm() {
   const onSubmit = (e) => {
     e.preventDefault();
     const next = {
-      intent: intent ? null : "Please pick one.",
+      intent: intent ? null : p(d.formIntentError) || "Please pick one.",
       name: validateField("name", values.name),
       phone: validateField("phone", values.phone),
       message: validateField("message", values.message),
@@ -62,7 +64,7 @@ export default function ContactForm() {
     const body = `${values.message.trim()}\n\n— ${values.name.trim()}${
       values.phone.trim() ? `\nPhone: ${values.phone.trim()}` : ""
     }`;
-    window.location.href = `mailto:${site.contact.email}?subject=${encodeURIComponent(
+    window.location.href = `mailto:${email || ""}?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
     setSent(true);
@@ -93,18 +95,20 @@ export default function ContactForm() {
             className="py-10 text-center md:py-16"
           >
             <p className="font-display text-[clamp(1.5rem,3.5vw,2.2rem)] font-bold leading-tight tracking-[-0.015em] text-ink">
-              {form.successTitle}
+              {p(d.formSuccessTitle) || "Your email app should be open."}
             </p>
             <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-body">
-              {form.successText}
+              {p(d.formSuccessText) || "Press send there and your message reaches the federation office."}
             </p>
             <div className="mt-8 flex flex-col items-center gap-4">
-              <a
-                href={`tel:${site.contact.phone.replace(/[^\d+]/g, "")}`}
-                className="link-wipe text-xs font-semibold uppercase tracking-[0.14em] text-ink"
-              >
-                Call us instead <span aria-hidden>→</span>
-              </a>
+              {phone && (
+                <a
+                  href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+                  className="link-wipe text-xs font-semibold uppercase tracking-[0.14em] text-ink"
+                >
+                  Call us instead <span aria-hidden>→</span>
+                </a>
+              )}
               <button
                 onClick={reset}
                 className="link-wipe text-xs font-semibold uppercase tracking-[0.14em] text-body"
@@ -125,7 +129,7 @@ export default function ContactForm() {
             {/* Intent chips */}
             <fieldset>
               <legend className="text-[11px] font-semibold uppercase tracking-[0.14em] text-body">
-                What brings you here?
+                {p(d.formIntentLegend) || "What brings you here?"}
               </legend>
               <div className="mt-4 flex flex-wrap gap-3">
                 {intents.map((label) => {
@@ -191,7 +195,7 @@ export default function ContactForm() {
                   htmlFor="cf-message"
                   className="text-[11px] font-semibold uppercase tracking-[0.14em] text-body"
                 >
-                  Your message
+                  {p(d.formMessageLabel) || "Your message"}
                 </label>
                 <textarea
                   id="cf-message"
@@ -213,13 +217,13 @@ export default function ContactForm() {
               </div>
             </div>
 
-            <p className="mt-8 text-xs leading-relaxed text-body">{form.note}</p>
+            <p className="mt-8 text-xs leading-relaxed text-body">{p(d.formNote)}</p>
 
             <button
               type="submit"
               className="tap-shrink mt-6 inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-madder to-grape px-7 py-4 text-sm font-semibold tracking-wide text-white shadow-lg shadow-madder/25 transition-all duration-200 md:w-auto [@media(hover:hover)]:hover:-translate-y-0.5 [@media(hover:hover)]:hover:brightness-110"
             >
-              Open email & send <span aria-hidden>→</span>
+              {p(d.formSubmitLabel) || "Open email & send"} <span aria-hidden>→</span>
             </button>
           </motion.form>
         )}

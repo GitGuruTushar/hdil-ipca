@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { localizedFieldSchema } = require('../utils/localizedField');
 
 const UpdateSchema = new mongoose.Schema({
   type: {
@@ -11,17 +12,8 @@ const UpdateSchema = new mongoose.Schema({
     enum: ['maintenance', 'events', 'achievements', 'general'],
     default: 'general'
   },
-  title: {
-    type: String,
-    required: [true, 'Please add a title'],
-    trim: true,
-    maxlength: [100, 'Title can not be more than 100 characters']
-  },
-  content: {
-    type: String,
-    required: [true, 'Please add content'],
-    maxlength: [5000, 'Content can not be more than 5000 characters']
-  },
+  title: localizedFieldSchema({ required: [true, 'Please add a title'], maxlength: [100, 'Title can not be more than 100 characters'] }),
+  content: localizedFieldSchema({ required: [true, 'Please add content'], maxlength: [5000, 'Content can not be more than 5000 characters'] }),
   images: [String],
   videoUrl: String,
   keywords: {

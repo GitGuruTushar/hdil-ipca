@@ -1,22 +1,22 @@
-import { PageHero } from "@/components/site/ui";
+import PageHeroCms from "@/components/site/page-hero-cms";
 import NewsExplorer from "@/components/site/updates/news-explorer";
-import { site } from "@/content/site";
 
 export const metadata = {
   title: "News & Updates",
-  description: site.news.hero.sub,
+  description: "Circulars, works and wins — straight from the office.",
+};
+
+const FALLBACK = {
+  eyebrow: "News · Bulletins · Work updates",
+  titleLead: "The park,",
+  titleEm: "in print.",
+  sub: "Circulars, works and wins — straight from the office.",
 };
 
 export default function UpdatesPage() {
-  const { hero } = site.news;
   return (
     <>
-      <PageHero
-        eyebrow={hero.eyebrow}
-        titleLead={hero.titleLead}
-        titleEm={hero.titleEm}
-        sub={hero.sub}
-      />
+      <PageHeroCms page="updates" fallback={FALLBACK} />
       <NewsExplorer />
     </>
   );

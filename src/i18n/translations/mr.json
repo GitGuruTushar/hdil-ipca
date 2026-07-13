@@ -1,0 +1,1487 @@
+{
+  "shared": {
+    "nav": {
+      "groupOverview": "आढावा",
+      "groupMessages": "संदेश",
+      "groupContent": "मजकूर",
+      "groupCommunity": "समुदाय",
+      "groupPeople": "लोक",
+      "groupSystem": "सिस्टीम",
+      "dashboard": "डॅशबोर्ड",
+      "messages": "संदेश",
+      "updatesNews": "अपडेट्स आणि बातम्या",
+      "notices": "सूचना",
+      "gallery": "गॅलरी",
+      "documents": "कागदपत्रे",
+      "workshops": "कार्यशाळा",
+      "pollsFeedback": "पोल आणि अभिप्राय",
+      "grievances": "तक्रारी",
+      "vacancies": "रिक्त जागा",
+      "members": "सदस्य",
+      "directory": "निर्देशिका",
+      "dues": "थकबाकी",
+      "emergencyRatings": "आणीबाणी आणि रेटिंग",
+      "contactMessages": "संपर्क संदेश",
+      "auditLog": "ऑडिट लॉग",
+      "home": "होम",
+      "myBusiness": "माझा व्यवसाय",
+      "more": "अधिक",
+      "typeBusiness": "व्यवसाय",
+      "typeNews": "बातम्या",
+      "typeVacancy": "रिक्त जागा",
+      "typeEmergency": "आणीबाणी",
+      "brandName": "HDIL-IPCA",
+      "closeMenu": "मेनू बंद करा",
+      "openMenu": "मेनू उघडा",
+      "logout": "लॉग आउट",
+      "welcomeBackName": "पुन्हा स्वागत आहे,",
+      "welcomeBack": "पुन्हा स्वागत आहे",
+      "ownerLabel": "मालक",
+      "tenantLabel": "भाडेकरू",
+      "federationMember": "फेडरेशन सदस्य",
+      "countOverflow": "9+",
+      "justNow": "आत्ताच",
+      "minutesAgoSuffix": "मिनिटांपूर्वी",
+      "hoursAgoSuffix": "तासांपूर्वी",
+      "daysAgoSuffix": "दिवसांपूर्वी",
+      "notifications": "नोटिफिकेशन्स",
+      "markAllRead": "सर्व वाचले म्हणून चिन्हांकित करा",
+      "loading": "लोड होत आहे…",
+      "allCaughtUp": "तुम्ही सर्व अपडेट्स पाहिले आहेत.",
+      "searchPlaceholder": "सर्व काही शोधा…",
+      "searchShortcutHint": "⌘K",
+      "searching": "शोधत आहे…",
+      "noMatchesPrefix": "“",
+      "noMatchesSuffix": "” साठी कोणतेही परिणाम आढळले नाहीत."
+    },
+    "widgets": {
+      "pagination": {
+        "pageLabel": "पृष्ठ",
+        "ofLabel": "पैकी",
+        "totalSuffix": "एकूण",
+        "previousPage": "मागील पृष्ठ",
+        "nextPage": "पुढील पृष्ठ"
+      },
+      "confirmDialog": {
+        "title": "तुम्हाला खात्री आहे का?",
+        "confirmLabel": "हटवा",
+        "cancelButton": "रद्द करा",
+        "workingLabel": "काम सुरू आहे…"
+      }
+    },
+    "forms": {
+      "chipInput": {
+        "placeholder": "कीवर्ड जोडा आणि एंटर दाबा…",
+        "removeLabel": "काढा",
+        "addAnotherPlaceholder": "आणखी एक जोडा…"
+      },
+      "richTextEditor": {
+        "boldLabel": "ठळक",
+        "italicLabel": "तिरपे",
+        "headingLabel": "मथळा",
+        "bulletListLabel": "बुलेट यादी",
+        "numberedListLabel": "क्रमांकित यादी",
+        "linkUrlPrompt": "लिंक URL",
+        "linkLabel": "लिंक"
+      },
+      "workshopCalendar": {
+        "previousMonthLabel": "मागील महिना",
+        "nextMonthLabel": "पुढील महिना",
+        "dow": {
+          "mon": "सोम",
+          "tue": "मंगळ",
+          "wed": "बुध",
+          "thu": "गुरु",
+          "fri": "शुक्र",
+          "sat": "शनि",
+          "sun": "रवि"
+        },
+        "moreLabel": "अधिक"
+      },
+      "qrCheckinPanel": {
+        "reminderSentTitle": "स्मरणपत्र पाठवले",
+        "reminderFailedTitle": "स्मरणपत्र पाठवता आले नाही",
+        "registeredLabel": "नोंदणीकृत",
+        "checkedInLabel": "चेक-इन",
+        "qrInstructions": "प्रिंट करा किंवा कार्यक्रमस्थळी प्रदर्शित करा — प्रत्येक सहभागी स्वतःच्या फोनने स्कॅन करून स्वतः चेक-इन करेल.",
+        "loadingCode": "चेक-इन कोड लोड होत आहे…",
+        "sendReminderButton": "आता स्मरणपत्र पाठवा",
+        "checkedInToastTitle": "चेक-इन झाले",
+        "checkInFailedTitle": "चेक-इन करता आले नाही",
+        "closeManualCheckinButton": "मॅन्युअल चेक-इन बंद करा",
+        "openManualCheckinButton": "+ मॅन्युअल चेक-इन",
+        "searchPlaceholder": "नाव, युजरनेम किंवा ईमेलने शोधा…",
+        "loadingMembers": "सदस्य लोड होत आहेत…",
+        "noMatches": "कोणतेही जुळणारे निकाल आढळले नाहीत.",
+        "checkingInEllipsis": "…",
+        "checkInLabel": "चेक-इन करा"
+      }
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "डॅशबोर्ड",
+      "description": "फेडरेशनमध्ये सुरू असलेल्या घडामोडींचा आढावा येथे आहे.",
+      "metrics": {
+        "businessListings": "व्यवसाय यादी",
+        "members": "सदस्य",
+        "openVacancies": "खुल्या रिक्त जागा",
+        "pendingDues": "थकीत शुल्क",
+        "pendingApprovals": "प्रलंबित मंजुरी"
+      },
+      "attention": {
+        "heading": "तुमच्या लक्षाची आवश्यकता आहे",
+        "loading": "लोड होत आहे…",
+        "emptyState": {
+          "title": "कोणतेही प्रलंबित काम नाही",
+          "description": "सध्या कोणतीही प्रलंबित मंजुरी, प्रलंबित तक्रार किंवा नवीन संदेश नाही."
+        },
+        "signedUpSuffix": "ने नोंदणी केली",
+        "awaitingApproval": "मंजुरीच्या प्रतीक्षेत",
+        "fromPrefix": "कडून",
+        "aMember": "एक सदस्य",
+        "messageFromPrefix": "यांच्याकडून संदेश:"
+      },
+      "timeAgo": {
+        "justNow": "आत्ताच",
+        "minutesSuffix": "मिनिटांपूर्वी",
+        "hoursSuffix": "तासांपूर्वी",
+        "daysSuffix": "दिवसांपूर्वी"
+      },
+      "quickActions": {
+        "heading": "जलद कृती",
+        "items": {
+          "updates": "अपडेट्स आणि बातम्या",
+          "notices": "सूचना",
+          "workshops": "कार्यशाळा",
+          "members": "सदस्य"
+        }
+      },
+      "updates": {
+        "title": "अपडेट्स आणि बातम्या",
+        "description": "सदस्यांसाठी बातम्या, घोषणा आणि ब्लॉग पोस्ट प्रकाशित करा.",
+        "newButton": "नवीन अपडेट",
+        "toast": {
+          "loadError": {
+            "title": "अपडेट्स लोड होऊ शकले नाहीत"
+          },
+          "tooManyImages": {
+            "title": "जास्तीत जास्त 5 प्रतिमांना परवानगी आहे",
+            "description": "फक्त पहिल्या 5 प्रतिमा ठेवण्यात आल्या आहेत."
+          },
+          "titleRequired": "शीर्षक आवश्यक आहे",
+          "contentRequired": "मजकूर आवश्यक आहे",
+          "redirectUrlRequired": "ब्लॉग पोस्टसाठी रीडायरेक्ट URL आवश्यक आहे",
+          "publishDateRequired": "शेड्यूल केलेल्या अपडेटसाठी प्रकाशन तारीख/वेळ निवडा",
+          "updateSaved": "अपडेट जतन केले",
+          "updateCreated": "अपडेट तयार केले",
+          "saveError": {
+            "title": "अपडेट जतन करता आले नाही"
+          },
+          "updateDeleted": "अपडेट हटवले",
+          "deleteError": {
+            "title": "अपडेट हटवता आले नाही"
+          }
+        },
+        "form": {
+          "editHeading": "अपडेट संपादित करा",
+          "newHeading": "नवीन अपडेट",
+          "cancelButton": "रद्द करा",
+          "typeLabel": "प्रकार",
+          "categoryLabel": "श्रेणी",
+          "titleLabel": "शीर्षक",
+          "titlePlaceholder": "अपडेटचे शीर्षक",
+          "contentLabel": "मजकूर",
+          "contentPlaceholder": "अपडेट लिहा…",
+          "redirectUrlLabel": "रीडायरेक्ट URL",
+          "redirectUrlPlaceholder": "https://…",
+          "keywordsLabel": "कीवर्ड्स",
+          "statusLabel": "स्थिती",
+          "publishAtLabel": "प्रकाशनाची वेळ",
+          "imagesLabel": "प्रतिमा (जास्तीत जास्त 5)",
+          "imagesHelp": "नवीन प्रतिमा अपलोड केल्यास सर्व सध्याच्या प्रतिमा बदलल्या जातील.",
+          "videoLabel": "व्हिडिओ",
+          "currentVideoLink": "सध्याचा व्हिडिओ ↗",
+          "videoHelp": "नवीन व्हिडिओ अपलोड केल्यास सध्याचा व्हिडिओ बदलला जाईल.",
+          "savingButton": "जतन होत आहे…",
+          "saveChangesButton": "बदल जतन करा",
+          "createButton": "अपडेट तयार करा"
+        },
+        "typeOptions": {
+          "news": "बातम्या",
+          "announcement": "घोषणा",
+          "blogs": "ब्लॉग पोस्ट"
+        },
+        "categoryOptions": {
+          "general": "सामान्य",
+          "maintenance": "देखभाल",
+          "events": "कार्यक्रम",
+          "achievements": "उपलब्धी"
+        },
+        "statusOptions": {
+          "draft": "मसुदा",
+          "scheduled": "नियोजित",
+          "published": "प्रकाशित"
+        },
+        "emptyState": {
+          "title": "अद्याप कोणतेही अपडेट नाही",
+          "description": "तुमची पहिली बातमी पोस्ट, घोषणा किंवा ब्लॉग नोंद तयार करा.",
+          "newButton": "+ नवीन अपडेट"
+        },
+        "table": {
+          "headers": {
+            "title": "शीर्षक",
+            "status": "स्थिती",
+            "category": "श्रेणी",
+            "created": "तयार केले",
+            "actions": "क्रिया"
+          },
+          "editAriaLabel": "संपादित करा",
+          "deleteAriaLabel": "हटवा",
+          "editButton": "संपादित करा",
+          "deleteButton": "हटवा"
+        },
+        "deleteDialog": {
+          "title": "हे अपडेट हटवायचे का?",
+          "description": "कायमचे हटवले जाईल. ही क्रिया पूर्ववत करता येणार नाही.",
+          "confirmButton": "हटवा"
+        }
+      },
+      "notices": {
+        "title": "सूचना",
+        "description": "विशिष्ट इमारती, गाळे किंवा वापर प्रकारांसाठी लक्ष्यित कालमर्यादित घोषणा.",
+        "newButton": "नवीन सूचना",
+        "toast": {
+          "loadError": {
+            "title": "सूचना लोड करता आल्या नाहीत"
+          },
+          "titleRequired": "शीर्षक आवश्यक आहे",
+          "contentRequired": "मजकूर आवश्यक आहे",
+          "expiryRequired": "कालबाह्यता तारीख आवश्यक आहे",
+          "publishDateRequired": "नियोजित सूचनांसाठी प्रकाशन तारीख/वेळ निवडा",
+          "noticeSaved": "सूचना जतन केली",
+          "noticeCreated": "सूचना तयार केली",
+          "saveError": {
+            "title": "सूचना जतन करता आली नाही"
+          },
+          "noticeDeleted": "सूचना हटवली",
+          "deleteError": {
+            "title": "सूचना हटवता आली नाही"
+          }
+        },
+        "form": {
+          "editHeading": "सूचना संपादित करा",
+          "newHeading": "नवीन सूचना",
+          "cancelButton": "रद्द करा",
+          "titleLabel": "शीर्षक",
+          "titlePlaceholder": "सूचना शीर्षक",
+          "contentLabel": "मजकूर",
+          "contentPlaceholder": "सूचना लिहा…",
+          "expiresAtLabel": "कालबाह्यता तारीख",
+          "targetAudienceLabel": "लक्ष्य गट",
+          "targetBuildingLabel": "लक्ष्य इमारत (ऐच्छिक)",
+          "targetBuildingPlaceholder": "उदा. 4",
+          "targetGalaLabel": "लक्ष्य गाळा (ऐच्छिक)",
+          "targetGalaPlaceholder": "उदा. 2",
+          "statusLabel": "स्थिती",
+          "publishAtLabel": "प्रकाशन तारीख",
+          "savingButton": "जतन करत आहे…",
+          "saveChangesButton": "बदल जतन करा",
+          "createButton": "सूचना तयार करा"
+        },
+        "audienceOptions": {
+          "everyone": "सर्व",
+          "owners": "मालक",
+          "tenants": "भाडेकरू"
+        },
+        "statusOptions": {
+          "draft": "मसुदा",
+          "scheduled": "नियोजित",
+          "published": "प्रकाशित"
+        },
+        "emptyState": {
+          "title": "अद्याप कोणतीही सूचना नाही",
+          "description": "मालक, भाडेकरू किंवा विशिष्ट इमारतींसाठी लक्ष्यित सूचना तयार करा.",
+          "newButton": "+ नवीन सूचना"
+        },
+        "table": {
+          "headers": {
+            "title": "शीर्षक",
+            "status": "स्थिती",
+            "targeting": "लक्ष्य",
+            "expires": "कालबाह्यता",
+            "actions": "क्रिया"
+          },
+          "buildingPrefix": "इमारत",
+          "galaPrefix": "गाळा",
+          "expiredPrefix": "कालबाह्य",
+          "expiresPrefix": "कालबाह्यता",
+          "editAriaLabel": "संपादित करा",
+          "deleteAriaLabel": "हटवा",
+          "editButton": "संपादित करा",
+          "deleteButton": "हटवा"
+        },
+        "deleteDialog": {
+          "title": "ही सूचना हटवायची का?",
+          "description": "कायमचे हटवले जाईल. ही क्रिया पूर्ववत करता येणार नाही.",
+          "confirmButton": "हटवा"
+        }
+      }
+    },
+    "media": {
+      "gallery": {
+        "itemCountSingular": "आयटम",
+        "itemCountPlural": "आयटम",
+        "deleteAlbumAriaLabel": "हटवा",
+        "toast": {
+          "loadAlbumsFailed": "अल्बम लोड करण्यात अयशस्वी",
+          "titleDateRequired": "शीर्षक आणि कार्यक्रमाची तारीख आवश्यक आहे",
+          "maxFilesAllowed": "जास्तीत जास्त 20 फाइल्सना परवानगी आहे",
+          "albumCreated": "अल्बम तयार केला",
+          "createAlbumFailed": "अल्बम तयार करण्यात अयशस्वी",
+          "saveCaptionFailed": "कॅप्शन सेव्ह करण्यात अयशस्वी",
+          "itemRemoved": "आयटम काढला",
+          "removeItemFailed": "आयटम काढण्यात अयशस्वी",
+          "albumDeleted": "अल्बम हटवला",
+          "deleteAlbumFailed": "अल्बम हटवण्यात अयशस्वी"
+        },
+        "title": "गॅलरी",
+        "description": "सदस्यांसोबत शेअर केलेले कार्यक्रम अल्बम.",
+        "newAlbumButton": "+ नवीन अल्बम",
+        "emptyState": {
+          "title": "अद्याप कोणतेही अल्बम नाहीत",
+          "description": "सदस्यांसोबत कार्यक्रमाचे फोटो आणि व्हिडिओ शेअर करणे सुरू करण्यासाठी तुमचा पहिला अल्बम तयार करा."
+        },
+        "form": {
+          "dialogTitle": "नवीन अल्बम",
+          "dialogDescription": "कार्यक्रमाचे फोटो किंवा व्हिडिओ जोडा — जास्तीत जास्त 20 फाइल्स.",
+          "titleLabel": "शीर्षक",
+          "titlePlaceholder": "उदा. वार्षिक सर्वसाधारण सभा 2026",
+          "eventDateLabel": "कार्यक्रमाची तारीख",
+          "categoryLabel": "श्रेणी",
+          "categoryPlaceholder": "उदा. कार्यशाळा",
+          "keywordsLabel": "कीवर्ड",
+          "mediaLabel": "फोटो / व्हिडिओ",
+          "selectedLabel": "निवडलेले",
+          "maxFilesWarning": "— जास्तीत जास्त 20 फाइल्स",
+          "cancelButton": "रद्द करा",
+          "creatingButton": "तयार करत आहे…",
+          "createButton": "अल्बम तयार करा"
+        },
+        "detail": {
+          "captionPlaceholder": "कॅप्शन जोडा…",
+          "removeButton": "काढा",
+          "emptyItems": "या अल्बममध्ये अद्याप कोणतेही फोटो किंवा व्हिडिओ नाहीत."
+        },
+        "confirm": {
+          "deleteAlbumTitle": "अल्बम हटवायचा का?",
+          "deleteAlbumAndAll": "आणि सर्व",
+          "deleteAlbumItemsSuffix": "आयटम कायमचे काढले जातील.",
+          "deleteAlbumConfirmLabel": "अल्बम हटवा",
+          "removeItemTitle": "हा आयटम काढायचा का?",
+          "removeItemDescription": "हा फोटो किंवा व्हिडिओ अल्बममधून कायमचा काढला जाईल.",
+          "removeItemConfirmLabel": "काढा"
+        }
+      },
+      "documents": {
+        "toast": {
+          "loadFailed": "कागदपत्रे लोड करता आली नाहीत",
+          "titleRequired": "शीर्षक आवश्यक आहे",
+          "fileRequired": "फाइल आवश्यक आहे",
+          "uploaded": "कागदपत्र अपलोड केले",
+          "uploadFailed": "कागदपत्र अपलोड करता आले नाही",
+          "deleted": "कागदपत्र हटवले",
+          "deleteFailed": "कागदपत्र हटवता आले नाही"
+        },
+        "title": "कागदपत्रे",
+        "description": "उपनियम, इतिवृत्त, परिपत्रके आणि सदस्यांसोबत शेअर केलेल्या इतर फाइल्स.",
+        "uploadButton": "कागदपत्र अपलोड करा",
+        "emptyState": {
+          "title": "अद्याप कोणतीही कागदपत्रे नाहीत",
+          "descriptionFiltered": "या श्रेणीत अद्याप कोणतीही कागदपत्रे नाहीत. वेगळे फिल्टर वापरून पहा किंवा नवीन अपलोड करा.",
+          "descriptionDefault": "सदस्यांसोबत शेअर करण्यासाठी तुमचे पहिले कागदपत्र अपलोड करा.",
+          "uploadButton": "+ कागदपत्र अपलोड करा"
+        },
+        "table": {
+          "title": "शीर्षक",
+          "category": "श्रेणी",
+          "uploadedBy": "अपलोडकर्ता",
+          "date": "तारीख",
+          "actions": "क्रिया"
+        },
+        "downloadAriaLabel": "डाउनलोड करा",
+        "deleteAriaLabel": "हटवा",
+        "downloadButton": "डाउनलोड करा",
+        "deleteButton": "हटवा",
+        "form": {
+          "dialogTitle": "कागदपत्र अपलोड करा",
+          "dialogDescription": "PDF, Word किंवा Excel फाइल्स, जास्तीत जास्त 20MB, सदस्यांसोबत शेअर केल्या जातील.",
+          "titleLabel": "शीर्षक",
+          "titlePlaceholder": "उदा. सोसायटी उपनियम 2026",
+          "descriptionLabel": "वर्णन",
+          "descriptionPlaceholder": "पर्यायी — या कागदपत्रात काय आहे…",
+          "categoryLabel": "श्रेणी",
+          "fileLabel": "फाइल",
+          "cancelButton": "रद्द करा",
+          "uploadingButton": "अपलोड होत आहे…",
+          "submitButton": "कागदपत्र अपलोड करा"
+        },
+        "confirm": {
+          "deleteTitle": "हे कागदपत्र हटवायचे का?",
+          "deleteDescriptionSuffix": "कायमचे हटवले जाईल. ही क्रिया पूर्ववत करता येणार नाही.",
+          "deleteConfirmLabel": "कागदपत्र हटवा"
+        },
+        "category": {
+          "all": "सर्व",
+          "bylaws": "उपविधी",
+          "minutes": "इतिवृत्त",
+          "circulars": "परिपत्रक",
+          "other": "इतर"
+        }
+      }
+    },
+    "community": {
+      "workshops": {
+        "title": "कार्यशाळा",
+        "description": "कार्यशाळांचे वेळापत्रक ठरवा, नोंदणी ट्रॅक करा आणि चेक-इन व्यवस्थापित करा.",
+        "newWorkshopButton": "+ नवीन कार्यशाळा",
+        "loadingCalendar": "दिनदर्शिका लोड होत आहे…",
+        "emptyState": {
+          "title": "एक कार्यशाळा निवडा",
+          "description": "दिनदर्शिकेवर कार्यशाळा असलेला दिवस निवडा, किंवा नवीन कार्यशाळा तयार करा."
+        },
+        "closeDetailsAriaLabel": "तपशील बंद करा",
+        "attendanceLabel": "उपस्थिती",
+        "refreshAttendanceAriaLabel": "उपस्थिती रिफ्रेश करा",
+        "registeredLabel": "नोंदणीकृत",
+        "checkedInLabel": "चेक-इन",
+        "loadingEllipsis": "लोड होत आहे…",
+        "noneYet": "अद्याप काहीही नाही.",
+        "editButton": "संपादित करा",
+        "deleteButton": "हटवा",
+        "upcomingHeading": "आगामी कार्यशाळा",
+        "noUpcoming": {
+          "title": "कोणतीही आगामी कार्यशाळा नाही",
+          "description": "येथे सूचीबद्ध दिसण्यासाठी तुमची पहिली कार्यशाळा शेड्यूल करा."
+        },
+        "deleteDialog": {
+          "title": "ही कार्यशाळा हटवायची का?",
+          "descriptionSuffix": "कायमस्वरूपी हटवली जाईल, तिच्या नोंदणी आणि चेक-इन नोंदींसह.",
+          "confirmLabel": "कार्यशाळा हटवा"
+        },
+        "toast": {
+          "loadError": "कार्यशाळा लोड करता आल्या नाहीत",
+          "invalidDateTime": "कृपया वैध तारीख आणि वेळ निवडा",
+          "updated": "कार्यशाळा अपडेट केली",
+          "created": "कार्यशाळा तयार केली",
+          "saveError": "कार्यशाळा सेव्ह करता आली नाही",
+          "deleted": "कार्यशाळा हटवली",
+          "deleteError": "कार्यशाळा हटवता आली नाही"
+        },
+        "form": {
+          "editTitle": "कार्यशाळा संपादित करा",
+          "createTitle": "नवीन कार्यशाळा",
+          "closeFormAriaLabel": "फॉर्म बंद करा",
+          "titleLabel": "शीर्षक",
+          "titlePlaceholder": "उदा. लहान उत्पादकांसाठी डिजिटल मार्केटिंग",
+          "descriptionLabel": "वर्णन",
+          "descriptionPlaceholder": "या कार्यशाळेत काय समाविष्ट असेल?",
+          "dateTimeLabel": "तारीख आणि वेळ",
+          "capacityLabel": "क्षमता",
+          "capacityPlaceholder": "उदा. 40",
+          "locationLabel": "ठिकाण",
+          "locationPlaceholder": "उदा. फेडरेशन हॉल, एमआयडीसी भोसरी",
+          "cancelButton": "रद्द करा",
+          "savingButton": "सेव्ह होत आहे…",
+          "saveChangesButton": "बदल सेव्ह करा",
+          "createButton": "कार्यशाळा तयार करा"
+        }
+      },
+      "polls": {
+        "title": "सर्वेक्षण आणि अभिप्राय",
+        "description": "सदस्य सर्वेक्षण चालवा आणि सादर केलेल्या अभिप्रायाचे पुनरावलोकन करा.",
+        "newPollButton": "नवीन सर्वेक्षण",
+        "tabs": {
+          "polls": "सर्वेक्षणे",
+          "feedback": "अभिप्राय"
+        },
+        "emptyState": {
+          "title": "अद्याप कोणतेही सर्वेक्षण नाही",
+          "description": "सदस्यांची मते गोळा करण्यास सुरुवात करण्यासाठी तुमचे पहिले सर्वेक्षण तयार करा."
+        },
+        "feedbackFilters": {
+          "all": "सर्व",
+          "new": "नवीन",
+          "reviewed": "पुनरावलोकन केलेले"
+        },
+        "feedbackEmptyState": {
+          "title": "अद्याप कोणताही अभिप्राय नाही",
+          "description": "सदस्यांनी सादर केलेला अभिप्राय पुनरावलोकनासाठी येथे दिसेल."
+        },
+        "createDialog": {
+          "title": "नवीन सर्वेक्षण",
+          "description": "कालबाह्यता तारखेसह सदस्यांना बहुपर्यायी प्रश्न विचारा."
+        },
+        "editDialog": {
+          "title": "सर्वेक्षण संपादित करा",
+          "description": "पर्याय येथे संपादित करता येत नाहीत — मतदान झाल्यानंतर ते बदलल्यास विद्यमान निकाल अवैध ठरतील. पर्याय बदलायचे असल्यास सर्वेक्षण हटवून पुन्हा तयार करा.",
+          "optionsPrefix": "पर्याय:"
+        },
+        "deleteDialog": {
+          "title": "हे सर्वेक्षण हटवायचे का?",
+          "descriptionSuffix": "कायमस्वरूपी हटवले जाईल, सर्व मतांसह.",
+          "confirmLabel": "सर्वेक्षण हटवा"
+        },
+        "form": {
+          "questionLabel": "प्रश्न",
+          "questionPlaceholder": "उदा. आपण यंदा एजीएम प्रत्यक्ष स्वरूपात आयोजित करावी का?",
+          "descriptionOptionalLabel": "वर्णन (ऐच्छिक)",
+          "descriptionLabel": "वर्णन",
+          "descriptionPlaceholder": "सदस्यांसाठी संदर्भ जोडा…",
+          "optionsLabel": "पर्याय",
+          "optionPlaceholderPrefix": "पर्याय",
+          "removeOptionAriaLabel": "पर्याय काढा",
+          "addOptionButton": "पर्याय जोडा",
+          "expiresAtLabel": "कालबाह्यता तारीख",
+          "cancelButton": "रद्द करा",
+          "creatingButton": "तयार होत आहे…",
+          "createButton": "पोल तयार करा",
+          "savingButton": "सेव्ह होत आहे…",
+          "saveChangesButton": "बदल सेव्ह करा"
+        },
+        "card": {
+          "statusOpen": "सुरू",
+          "statusClosed": "बंद",
+          "closedEarly": "वेळेआधी बंद",
+          "endedPrefix": "संपले",
+          "expiresPrefix": "संपेल",
+          "voteLabel": "मत",
+          "editButton": "संपादित करा",
+          "closingButton": "बंद होत आहे…",
+          "closeEarlyButton": "वेळेआधी बंद करा",
+          "deleteButton": "हटवा"
+        },
+        "feedbackRow": {
+          "unknownMember": "अज्ञात सदस्य",
+          "markReviewedButton": "पुनरावलोकन केले म्हणून चिन्हांकित करा",
+          "showLess": "कमी दाखवा",
+          "showMore": "अधिक दाखवा",
+          "adminNoteLabel": "अॅडमिन नोंद: ",
+          "noteLabel": "नोंद (ऐच्छिक)",
+          "notePlaceholder": "हे कसे हाताळले गेले याबाबत अंतर्गत नोंद जोडा…",
+          "saveButton": "सेव्ह करा",
+          "savingButton": "सेव्ह होत आहे…"
+        },
+        "toast": {
+          "loadPollsError": "पोल लोड करण्यात अयशस्वी",
+          "questionRequired": "प्रश्न आवश्यक आहे",
+          "optionsRequired": "किमान दोन पर्याय आवश्यक आहेत",
+          "expiryRequired": "कालबाह्यतेची तारीख/वेळ आवश्यक आहे",
+          "pollCreated": "पोल तयार झाला",
+          "createPollError": "पोल तयार करण्यात अयशस्वी",
+          "pollUpdated": "पोल अपडेट झाला",
+          "updatePollError": "पोल अपडेट करण्यात अयशस्वी",
+          "pollClosed": "पोल बंद झाला",
+          "closePollError": "पोल बंद करण्यात अयशस्वी",
+          "pollDeleted": "पोल हटवला",
+          "deletePollError": "पोल हटवण्यात अयशस्वी",
+          "loadFeedbackError": "फीडबॅक लोड करण्यात अयशस्वी",
+          "feedbackReviewed": "फीडबॅक पुनरावलोकन केले म्हणून चिन्हांकित केले",
+          "updateFeedbackError": "फीडबॅक अपडेट करण्यात अयशस्वी"
+        }
+      }
+    },
+    "people": {
+      "grievances": {
+        "toasts": {
+          "loadErrorTitle": "तक्रारी लोड होऊ शकल्या नाहीत",
+          "updated": "तक्रार अपडेट झाली",
+          "saveErrorTitle": "बदल सेव्ह होऊ शकले नाहीत"
+        },
+        "title": "तक्रारी",
+        "description": "सदस्यांनी नोंदवलेल्या तक्रारी, नवीनतम प्रथम क्रमाने.",
+        "loading": "तक्रारी लोड होत आहेत…",
+        "emptyState": {
+          "filteredTitle": "या फिल्टरशी जुळणारी कोणतीही तक्रार नाही",
+          "title": "अद्याप कोणतीही तक्रार नाही",
+          "filteredDescription": "वेगळा स्टेटस वापरून पहा, किंवा सर्व काही पाहण्यासाठी फिल्टर साफ करा.",
+          "description": "सदस्यांनी नोंदवलेल्या तक्रारी सबमिट होताच येथे दिसतील.",
+          "clearFilter": "फिल्टर साफ करा"
+        },
+        "unknownMember": "अज्ञात सदस्य",
+        "form": {
+          "descriptionLabel": "वर्णन",
+          "statusLabel": "स्थिती",
+          "adminResponseLabel": "अॅडमिन प्रतिसाद",
+          "adminResponsePlaceholder": "सदस्याला दिसेल असा प्रतिसाद जोडा…",
+          "saving": "सेव्ह होत आहे…",
+          "saveButton": "सेव्ह करा"
+        },
+        "filters": {
+          "all": "सर्व",
+          "open": "सुरू",
+          "inProgress": "प्रगतीपथावर",
+          "resolved": "निकाली काढले"
+        }
+      },
+      "vacancies": {
+        "toasts": {
+          "loadErrorTitle": "रिक्त जागा लोड होऊ शकल्या नाहीत",
+          "posted": "रिक्त जागा पोस्ट केली",
+          "postErrorTitle": "रिक्त जागा पोस्ट होऊ शकली नाही",
+          "loadApplicantsErrorTitle": "अर्जदार लोड होऊ शकले नाहीत",
+          "closed": "रिक्त जागा बंद केली",
+          "closedDescription": "ही आता या खुल्या रिक्त जागांच्या यादीत दिसणार नाही.",
+          "closeErrorTitle": "रिक्त जागा बंद होऊ शकली नाही",
+          "deleted": "रिक्त जागा हटवली",
+          "deleteErrorTitle": "रिक्त जागा हटवली जाऊ शकली नाही",
+          "updateApplicantErrorTitle": "अर्जदाराची स्थिती अपडेट होऊ शकली नाही"
+        },
+        "title": "रिक्त जागा",
+        "description": "येथे फक्त भविष्यातील अंतिम मुदत असलेल्या खुल्या रिक्त जागा दाखवल्या जातात — बंद किंवा मुदत संपलेल्या पोस्टिंग या यादीत दाखवल्या जात नाहीत.",
+        "newVacancyButton": "+ नवीन रिक्त जागा",
+        "loading": "रिक्त जागा लोड होत आहेत…",
+        "emptyState": {
+          "title": "कोणतीही खुली रिक्त जागा नाही",
+          "description": "फेडरेशन सदस्यांना अर्ज करण्यासाठी नोकरीची रिक्त जागा पोस्ट करा."
+        },
+        "deadlineLabel": "अंतिम मुदत",
+        "list": {
+          "applicantSingular": "अर्जदार",
+          "applicantPlural": "अर्जदार"
+        },
+        "createDialog": {
+          "title": "नवीन रिक्त जागा पोस्ट करा",
+          "description": "सदस्यांना लगेच दिसेल, जोपर्यंत अंतिम मुदत संपत नाही किंवा तुम्ही ती लवकर बंद करत नाही."
+        },
+        "form": {
+          "titleLabel": "शीर्षक",
+          "titlePlaceholder": "उदा. मशीन ऑपरेटर",
+          "descriptionLabel": "वर्णन",
+          "descriptionPlaceholder": "भूमिका, जबाबदाऱ्या, कामाचे तास…",
+          "eligibilityLabel": "पात्रता",
+          "eligibilityPlaceholder": "अनुभव, कौशल्ये, आवश्यक पात्रता…",
+          "deadlineLabel": "अर्ज करण्याची अंतिम तारीख",
+          "cancelButton": "रद्द करा",
+          "posting": "पोस्ट करत आहे…",
+          "postButton": "रिक्ती पोस्ट करा"
+        },
+        "detail": {
+          "postedByLabel": "यांनी पोस्ट केले",
+          "closing": "बंद करत आहे…",
+          "closeEarlyButton": "लवकर बंद करा",
+          "deleteButton": "हटवा",
+          "applicantsHeading": "अर्जदार",
+          "loadingApplicants": "अर्जदार लोड होत आहेत…",
+          "noApplicantsTitle": "अद्याप कोणीही अर्जदार नाही",
+          "noApplicantsDescription": "या रिक्तीसाठी सादर केलेले अर्ज येथे दिसतील.",
+          "viewResumeLink": "रिझ्युमे पहा"
+        },
+        "confirmDelete": {
+          "title": "ही रिक्ती हटवायची का?",
+          "description": "यामुळे ही रिक्ती आणि यासाठी सादर केलेले सर्व अर्ज कायमचे हटवले जातील. ही क्रिया पूर्ववत करता येणार नाही.",
+          "confirmButton": "रिक्ती हटवा"
+        },
+        "applicationStatus": {
+          "new": "नवीन",
+          "reviewed": "पुनरावलोकन केले",
+          "shortlisted": "शॉर्टलिस्ट केले",
+          "rejected": "नाकारले"
+        }
+      },
+      "members": {
+        "toasts": {
+          "loadPendingErrorTitle": "प्रलंबित मंजुरी लोड होऊ शकल्या नाहीत",
+          "loadMembersErrorTitle": "सदस्य लोड होऊ शकले नाहीत",
+          "created": "सदस्य तयार केला",
+          "createErrorTitle": "सदस्य तयार करता आला नाही",
+          "approvedSuffix": "मंजूर केले",
+          "approveErrorTitle": "सदस्याला मंजुरी देता आली नाही",
+          "rejected": "नोंदणी नाकारली",
+          "rejectErrorTitle": "नोंदणी नाकारता आली नाही",
+          "disabled": "सदस्य निष्क्रिय केला",
+          "reEnabled": "सदस्य पुन्हा सक्रिय केला",
+          "updateErrorTitle": "सदस्य अद्ययावत करता आला नाही",
+          "deleted": "सदस्य हटवला",
+          "deleteErrorTitle": "सदस्य हटवता आला नाही"
+        },
+        "title": "सदस्य",
+        "description": "नवीन नोंदणी मंजूर करा आणि फेडरेशन सदस्य खात्यांचे व्यवस्थापन करा.",
+        "addMemberButton": "सदस्य जोडा",
+        "pendingHeading": "मंजुरी प्रलंबित",
+        "appliedLabel": "अर्ज केला",
+        "approving": "मंजूर करत आहे…",
+        "approveButton": "मंजूर करा",
+        "rejectButton": "नाकारा",
+        "emptyState": {
+          "title": "अद्याप कोणीही सदस्य नाही",
+          "description": "पहिले सदस्य खाते थेट जोडा, किंवा सदस्यांनी लॉगिन पानावरून स्वतः नोंदणी करण्याची वाट पहा.",
+          "addMemberButton": "+ सदस्य जोडा"
+        },
+        "table": {
+          "name": "नाव",
+          "email": "ईमेल",
+          "role": "भूमिका",
+          "status": "स्थिती",
+          "joined": "सामील झाले",
+          "actions": "कृती"
+        },
+        "saving": "जतन करत आहे…",
+        "enableButton": "सक्रिय करा",
+        "disableButton": "निष्क्रिय करा",
+        "deleteButton": "हटवा",
+        "joinedLabel": "सामील झाले",
+        "createDialog": {
+          "title": "सदस्य जोडा",
+          "description": "तात्काळ प्रवेशासह खाते तयार करते — मंजुरीची आवश्यकता नाही."
+        },
+        "form": {
+          "usernameLabel": "वापरकर्तानाव",
+          "usernamePlaceholder": "उदा. rpatel",
+          "fullNameLabel": "पूर्ण नाव",
+          "fullNamePlaceholder": "उदा. राकेश पटेल",
+          "emailLabel": "ईमेल",
+          "emailPlaceholder": "name@example.com",
+          "phoneLabel": "फोन (ऐच्छिक)",
+          "phonePlaceholder": "उदा. 9876543210",
+          "passwordLabel": "प्रारंभिक पासवर्ड",
+          "passwordPlaceholder": "किमान 6 अक्षरे",
+          "roleLabel": "भूमिका",
+          "cancelButton": "रद्द करा",
+          "creating": "तयार करत आहे…",
+          "createButton": "सदस्य तयार करा"
+        },
+        "confirmReject": {
+          "title": "ही नोंदणी नाकारायची का?",
+          "description": "चा खाते नोंदणी अर्ज रद्द केला जाईल. ते नंतर पुन्हा नोंदणी करू शकतात.",
+          "confirmButton": "नोंदणी नाकारा"
+        },
+        "confirmDelete": {
+          "title": "या सदस्याला हटवायचे आहे का?",
+          "description": "कायमचे काढून टाकले जाईल. जर त्यांच्या नावावर अजूनही एखादी व्यवसाय सूची असेल, तर ही कृती अयशस्वी होईल.",
+          "confirmButton": "सदस्य हटवा"
+        },
+        "roleOptions": {
+          "member": "सदस्य",
+          "moderator": "मॉडरेटर",
+          "admin": "अ‍ॅडमिन"
+        }
+      }
+    },
+    "system": {
+      "industries": {
+        "header": {
+          "title": "डिरेक्टरी",
+          "description": "सदस्यांनी तयार केलेल्या व्यवसाय सूची — इथे पडताळणी करा आणि व्यवस्थापित करा."
+        },
+        "filters": {
+          "searchPlaceholder": "नाव किंवा वर्णन शोधा…",
+          "buildingPlaceholder": "इमारत क्रमांक",
+          "typePlaceholder": "व्यवसायाचा प्रकार"
+        },
+        "emptyState": {
+          "filteredTitle": "तुमच्या फिल्टरशी जुळणारी कोणतीही सूची नाही",
+          "title": "अद्याप कोणतीही व्यवसाय सूची नाही",
+          "filteredDescription": "वेगळा शोध शब्द वापरून पहा, किंवा वरील फिल्टर साफ करा.",
+          "description": "सदस्य त्यांच्या सदस्य डॅशबोर्डवरून स्वतःची व्यवसाय सूची तयार करू शकतात."
+        },
+        "table": {
+          "business": "व्यवसाय",
+          "type": "प्रकार",
+          "owner": "मालक",
+          "location": "स्थान",
+          "verified": "सत्यापित",
+          "actions": "क्रिया",
+          "buildingPrefix": "इमारत",
+          "galaPrefix": "गाळा",
+          "editAriaLabel": "संपादित करा",
+          "deleteAriaLabel": "हटवा"
+        },
+        "mobile": {
+          "ownerPrefix": "मालक:",
+          "editButton": "संपादित करा",
+          "deleteButton": "हटवा"
+        },
+        "badge": {
+          "verified": "सत्यापित",
+          "verifying": "पडताळणी सुरू आहे…",
+          "verify": "पडताळणी करा"
+        },
+        "toast": {
+          "loadErrorTitle": "डिरेक्टरी लोड होऊ शकली नाही",
+          "verifiedTitle": "पडताळणी झाल्याचे चिन्हांकित केले",
+          "unverifiedTitle": "पडताळणी काढून टाकली",
+          "verifyErrorTitle": "पडताळणी अपडेट होऊ शकली नाही",
+          "updatedTitle": "सूची अपडेट केली",
+          "saveErrorTitle": "बदल सेव्ह होऊ शकले नाहीत",
+          "deletedTitle": "सूची हटवली",
+          "deleteErrorTitle": "सूची हटवता आली नाही"
+        },
+        "editDialog": {
+          "title": "सूची संपादित करा",
+          "description": "या व्यवसाय सूचीचे तपशील अपडेट करा."
+        },
+        "form": {
+          "nameLabel": "व्यवसायाचे नाव",
+          "typeLabel": "व्यवसायाचा प्रकार",
+          "descriptionLabel": "वर्णन",
+          "galaLabel": "गाळा क्रमांक",
+          "buildingLabel": "इमारत क्रमांक",
+          "occupancyLabel": "भोगवटा प्रकार",
+          "gstLabel": "जीएसटी माहिती",
+          "contactLabel": "संपर्क क्रमांक",
+          "keywordsLabel": "कीवर्ड",
+          "photosLabel": "फोटो बदला (ऐच्छिक)",
+          "existingPhotoLabel": "सध्याचा फोटो",
+          "keepPhotosHint": "ते तसेच ठेवण्यासाठी रिकामे सोडा.",
+          "cancelButton": "रद्द करा",
+          "savingButton": "सेव्ह होत आहे…",
+          "saveButton": "बदल सेव्ह करा"
+        },
+        "occupancy": {
+          "owner": "मालक",
+          "tenant": "भाडेकरू"
+        },
+        "deleteDialog": {
+          "title": "ही सूची हटवायची आहे का?",
+          "description": "कायमचे काढून टाकले जाईल. ही कृती पूर्ववत करता येणार नाही.",
+          "confirmLabel": "सूची हटवा"
+        }
+      },
+      "emergency": {
+        "categories": {
+          "emergency": "आणीबाणी",
+          "serviceProvider": "सेवा पुरवठादार",
+          "other": "इतर"
+        },
+        "toast": {
+          "loadErrorTitle": "संपर्क लोड होऊ शकले नाहीत",
+          "addedTitle": "संपर्क जोडला",
+          "addErrorTitle": "संपर्क जोडता आला नाही",
+          "updatedTitle": "संपर्क अपडेट केला",
+          "updateErrorTitle": "संपर्क अपडेट होऊ शकला नाही",
+          "removedTitle": "संपर्क काढून टाकला",
+          "deleteErrorTitle": "संपर्क हटवता आला नाही",
+          "ratingsLoadErrorTitle": "रेटिंग लोड होऊ शकल्या नाहीत"
+        },
+        "header": {
+          "title": "आणीबाणी आणि रेटिंग",
+          "description": "सदस्यांना दिसणारे आणीबाणी क्रमांक आणि सेवा पुरवठादार.",
+          "addButton": "+ संपर्क जोडा"
+        },
+        "loading": "संपर्क लोड होत आहेत…",
+        "emptyState": {
+          "title": "अद्याप कोणतेही आणीबाणी संपर्क नाहीत",
+          "description": "सदस्य कॉल करू शकतील असा पहिला आणीबाणी क्रमांक किंवा सेवा पुरवठादार जोडा."
+        },
+        "actions": {
+          "viewRatings": "रेटिंग पहा",
+          "hideRatings": "रेटिंग लपवा",
+          "edit": "संपादित करा",
+          "delete": "हटवा"
+        },
+        "editForm": {
+          "nameLabel": "नाव",
+          "numberLabel": "नंबर",
+          "categoryLabel": "श्रेणी",
+          "cancelButton": "रद्द करा",
+          "savingButton": "जतन होत आहे…",
+          "saveButton": "जतन करा"
+        },
+        "ratings": {
+          "internalNote": "फक्त अंतर्गत वापरासाठी — उत्तरदायित्वासाठी रेटिंग कधीही सार्वजनिकरित्या दाखवली जात नाहीत.",
+          "loading": "रेटिंग लोड होत आहेत…",
+          "countSuffix": "रेटिंग",
+          "none": "अद्याप कोणतीही रेटिंग सादर केलेली नाही.",
+          "unknownMember": "अज्ञात सदस्य"
+        },
+        "createDialog": {
+          "title": "आपत्कालीन संपर्क जोडा",
+          "description": "सार्वजनिक आपत्कालीन क्रमांक पानावर सर्व सदस्यांना दिसेल."
+        },
+        "createForm": {
+          "nameLabel": "नाव",
+          "namePlaceholder": "उदा. अग्निशमन केंद्र",
+          "numberLabel": "नंबर",
+          "numberPlaceholder": "उदा. 101",
+          "categoryLabel": "श्रेणी",
+          "cancelButton": "रद्द करा",
+          "addingButton": "जोडले जात आहे…",
+          "addButton": "संपर्क जोडा"
+        },
+        "deleteDialog": {
+          "title": "हा संपर्क हटवायचा का?",
+          "description": "यामुळे संपर्क आणि त्यासाठी सादर केलेली सर्व रेटिंग कायमची हटवली जाईल. ही क्रिया पूर्ववत करता येणार नाही.",
+          "confirmLabel": "संपर्क हटवा"
+        }
+      },
+      "dues": {
+        "filters": {
+          "all": "सर्व",
+          "paid": "भरले",
+          "pending": "प्रलंबित"
+        },
+        "header": {
+          "title": "थकबाकी",
+          "description": "विविध कालावधींमध्ये जमा झालेल्या सदस्यत्व थकबाकीचा मागोवा घ्या.",
+          "addButton": "+ थकबाकी जोडा"
+        },
+        "toast": {
+          "memberRequiredTitle": "सदस्य आयडी आवश्यक आहे",
+          "loadErrorTitle": "थकबाकी लोड करता आली नाही",
+          "addedTitle": "थकबाकी जोडली",
+          "addErrorTitle": "थकबाकी जोडता आली नाही",
+          "markedPaidTitle": "भरले म्हणून चिन्हांकित केले",
+          "markedPendingTitle": "प्रलंबित म्हणून चिन्हांकित केले",
+          "statusErrorTitle": "स्थिती अपडेट करता आली नाही",
+          "removedTitle": "थकबाकी हटवली",
+          "deleteErrorTitle": "थकबाकी हटवता आली नाही"
+        },
+        "loading": "थकबाकी लोड होत आहे…",
+        "emptyState": {
+          "filteredTitle": "या फिल्टरशी जुळणारी कोणतीही थकबाकी नाही",
+          "title": "अद्याप कोणतीही थकबाकी नोंदवलेली नाही",
+          "filteredDescription": "वेगळी स्थिती वापरून पाहा, किंवा सर्व काही पाहण्यासाठी फिल्टर काढा.",
+          "description": "सदस्यत्व पेमेंटचा मागोवा घेणे सुरू करण्यासाठी एक थकबाकी नोंद जोडा.",
+          "clearFilterButton": "फिल्टर काढा"
+        },
+        "row": {
+          "unknownMember": "अज्ञात सदस्य",
+          "markPending": "प्रलंबित म्हणून चिन्हांकित करा",
+          "markPaid": "भरले म्हणून चिन्हांकित करा",
+          "saving": "जतन होत आहे…",
+          "deleteButton": "हटवा"
+        },
+        "createDialog": {
+          "title": "थकबाकी नोंद जोडा",
+          "description": "एखाद्या सदस्यासाठी थकबाकी पेमेंट (किंवा देय रक्कम) नोंदवा."
+        },
+        "createForm": {
+          "memberLabel": "सदस्य आयडी",
+          "memberPlaceholder": "सदस्याचा युजर आयडी पेस्ट करा",
+          "memberHint": "सदस्य पानावरून सदस्याचा युजर आयडी पेस्ट करा.",
+          "industryLabel": "इंडस्ट्री आयडी",
+          "optionalSuffix": "(पर्यायी)",
+          "industryPlaceholder": "लागू असल्यास, इंडस्ट्री आयडी पेस्ट करा",
+          "periodLabel": "कालावधी",
+          "periodPlaceholder": "उदा. जुलै 2026",
+          "amountLabel": "रक्कम (₹)",
+          "amountPlaceholder": "उदा. 500",
+          "noteLabel": "टीप",
+          "notePlaceholder": "अतिरिक्त माहिती असल्यास…",
+          "cancelButton": "रद्द करा",
+          "addingButton": "जोडले जात आहे…",
+          "addButton": "थकबाकी जोडा"
+        },
+        "deleteDialog": {
+          "title": "ही थकबाकी नोंद हटवायची का?",
+          "description": "यामुळे नोंद कायमची हटवली जाईल. ही क्रिया पूर्ववत करता येणार नाही.",
+          "confirmLabel": "थकबाकी हटवा"
+        }
+      }
+    },
+    "misc": {
+      "contactMessages": {
+        "pageTitle": "संपर्क संदेश",
+        "pageDescription": "सार्वजनिक संपर्क फॉर्मद्वारे पाठवलेले संदेश.",
+        "filterAll": "सर्व",
+        "filterNew": "नवीन",
+        "filterRead": "वाचलेले",
+        "loading": "संदेश लोड होत आहेत…",
+        "emptyTitleFiltered": "या फिल्टरशी जुळणारा कोणताही संदेश नाही",
+        "emptyTitle": "अद्याप कोणताही संदेश नाही",
+        "emptyDescriptionFiltered": "वेगळी स्थिती वापरून पहा, किंवा सर्वकाही पाहण्यासाठी फिल्टर काढा.",
+        "emptyDescription": "सार्वजनिक संपर्क फॉर्मद्वारे पाठवलेले संदेश येथे दिसतील.",
+        "clearFilter": "फिल्टर काढा",
+        "noDate": "—",
+        "markReadButton": "वाचले म्हणून चिन्हांकित करा",
+        "markingButton": "चिन्हांकित करत आहे…",
+        "deleteButton": "हटवा",
+        "deleteDialogTitle": "हा संदेश हटवायचा का?",
+        "deleteDialogDescription": "यामुळे संदेश कायमचा हटवला जाईल. ही क्रिया परत करता येणार नाही.",
+        "deleteDialogConfirm": "संदेश हटवा",
+        "toastLoadErrorTitle": "संदेश लोड करता आले नाहीत",
+        "toastMarkReadSuccessTitle": "वाचले म्हणून चिन्हांकित केले",
+        "toastMarkReadErrorTitle": "वाचले म्हणून चिन्हांकित करता आले नाही",
+        "toastDeleteSuccessTitle": "संदेश हटवला",
+        "toastDeleteErrorTitle": "संदेश हटवता आला नाही"
+      },
+      "auditLog": {
+        "pageTitle": "ऑडिट लॉग",
+        "pageDescription": "प्रत्येक महत्त्वाची अ‍ॅडमिन कारवाई, क्रमाने.",
+        "filterAllTypes": "सर्व प्रकार",
+        "filterUser": "वापरकर्ता",
+        "filterNotice": "सूचना",
+        "filterPoll": "पोल",
+        "filterUpdate": "अपडेट",
+        "filterWorkshop": "कार्यशाळा",
+        "filterIndustry": "उद्योग",
+        "defaultAction": "एक कारवाई केली",
+        "unknownUser": "अज्ञात वापरकर्ता",
+        "noDate": "—",
+        "justNow": "आत्ताच",
+        "secondsAgoSuffix": " सेकंदांपूर्वी",
+        "minuteAgo": "मिनिटापूर्वी",
+        "minutesAgo": "मिनिटांपूर्वी",
+        "hourAgo": "तासापूर्वी",
+        "hoursAgo": "तासांपूर्वी",
+        "dayAgo": "दिवसापूर्वी",
+        "daysAgo": "दिवसांपूर्वी",
+        "weekAgo": "आठवड्यापूर्वी",
+        "weeksAgo": "आठवड्यांपूर्वी",
+        "errorEmptyTitle": "ऑडिट लॉग लोड करता आला नाही",
+        "tryAgainButton": "पुन्हा प्रयत्न करा",
+        "emptyTitle": "अजून कोणतीही हालचाल नाही",
+        "emptyDescriptionFilteredPrefix": "कोणतीही नोंदवलेली कारवाई नाही \"",
+        "emptyDescriptionFilteredSuffix": "\" साठी — दुसरा फिल्टर वापरून पहा.",
+        "emptyDescription": "महत्त्वाच्या अ‍ॅडमिन कारवाया — मंजुरी, संपादन, हटवणे — घडताच येथे दिसतील.",
+        "clearFilter": "फिल्टर काढा",
+        "toastLoadErrorTitle": "ऑडिट लॉग लोड करता आला नाही"
+      }
+    }
+  },
+  "member": {
+    "home": {
+      "title": "मुखपृष्ठ",
+      "description": "तुमची फेडरेशन क्रियाकलाप एका दृष्टीक्षेपात.",
+      "poll": {
+        "title": "या आठवड्याचा पोल",
+        "loading": "लोड होत आहे…",
+        "emptyState": {
+          "title": "सध्या कोणताही खुला पोल नाही",
+          "description": "लवकरच पुन्हा तपासा — नवीन पोल नियमितपणे पोस्ट केले जातात."
+        },
+        "expiresLabel": "मुदत संपते",
+        "votingButton": "मतदान करत आहे…",
+        "voteButton": "मत द्या",
+        "thanksMessage": "तुमचे मत नोंदवल्याबद्दल धन्यवाद.",
+        "toast": {
+          "voteRecorded": "मत नोंदवले",
+          "voteError": "तुमचे मत सबमिट करता आले नाही",
+          "alreadyVoted": "तुम्ही या पोलवर आधीच मतदान केले आहे"
+        }
+      },
+      "feedback": {
+        "title": "अभिप्राय",
+        "description": "काही सूचना किंवा चिंता आहे? आम्हाला थेट सांगा.",
+        "toast": {
+          "missingFields": "कृपया दोन्ही फील्ड भरा",
+          "sent": "अभिप्राय पाठवला — धन्यवाद",
+          "error": "अभिप्राय पाठवता आला नाही"
+        },
+        "form": {
+          "subjectLabel": "विषय",
+          "subjectPlaceholder": "उदा. पुढील AGM साठी सूचना",
+          "messageLabel": "संदेश",
+          "messagePlaceholder": "तुमचा संदेश…",
+          "sendingButton": "पाठवत आहे…",
+          "sendButton": "अभिप्राय पाठवा"
+        }
+      },
+      "upcomingWorkshops": {
+        "title": "आगामी कार्यशाळा",
+        "seeAll": "सर्व पाहा",
+        "loading": "लोड होत आहे…",
+        "emptyState": {
+          "title": "कोणतीही आगामी कार्यशाळा नाही",
+          "description": "वेळापत्रक निश्चित झाल्यावर नवीन कार्यशाळा येथे दिसतील."
+        },
+        "toast": {
+          "registered": "तुम्ही नोंदणीकृत आहात",
+          "registerError": "नोंदणी करता आली नाही",
+          "alreadyRegistered": "तुम्ही या कार्यशाळेसाठी आधीच नोंदणी केली आहे"
+        },
+        "registeredButton": "नोंदणीकृत ✓",
+        "registeringButton": "नोंदणी करत आहे…",
+        "registerButton": "नोंदणी करा"
+      },
+      "noticesPreview": {
+        "title": "तुमच्यासाठी सूचना",
+        "seeAll": "सर्व पहा",
+        "loading": "लोड होत आहे…",
+        "emptyState": {
+          "title": "सध्या कोणतीही सूचना नाही",
+          "description": "तुमच्यासाठी पाठवलेल्या सूचना इथे दिसतील."
+        }
+      },
+      "workshopsPage": {
+        "title": "कार्यशाळा",
+        "description": "कार्यशाळांसाठी नोंदणी करा आणि आगामी कार्यक्रमांचा मागोवा घ्या.",
+        "toast": {
+          "loadError": "कार्यशाळा लोड होऊ शकल्या नाहीत",
+          "registered": "तुमची नोंदणी झाली आहे",
+          "registerError": "नोंदणी होऊ शकली नाही",
+          "alreadyRegistered": "तुम्ही या कार्यशाळेसाठी आधीच नोंदणी केली आहे",
+          "cancelled": "नोंदणी रद्द केली",
+          "cancelError": "नोंदणी रद्द होऊ शकली नाही"
+        },
+        "emptyState": {
+          "title": "अद्याप कोणतीही कार्यशाळा नाही",
+          "description": "नियोजित कार्यशाळा इथे दिसतील — लवकरच पुन्हा तपासा."
+        },
+        "registerButton": "नोंदणी करा",
+        "cancellingButton": "रद्द करत आहे…",
+        "unregisterButton": "नोंदणी रद्द करा",
+        "registeringButton": "नोंदणी करत आहे…",
+        "fullButton": "पूर्ण",
+        "registeredLabel": "नोंदणीकृत",
+        "fullBadge": "पूर्ण",
+        "pastWorkshopButton": "संपलेली कार्यशाळा"
+      },
+      "noticesPage": {
+        "title": "सूचना",
+        "description": "तुमच्यासाठी HDIL-IPCA कडून घोषणा.",
+        "toast": {
+          "loadError": "सूचना लोड होऊ शकल्या नाहीत"
+        },
+        "emptyState": {
+          "title": "सध्या कोणतीही सूचना नाही",
+          "description": "तुम्ही पूर्णपणे अद्ययावत आहात — HDIL-IPCA च्या घोषणांसाठी नंतर पुन्हा तपासा."
+        },
+        "buildingPrefix": "इमारत",
+        "galaPrefix": "गाळा",
+        "expiredLabel": "कालबाह्य",
+        "expiresLabel": "कालबाह्यता"
+      }
+    },
+    "more": {
+      "business": {
+        "occupancy": {
+          "owner": "मालक",
+          "tenant": "भाडेकरू"
+        },
+        "toast": {
+          "loadError": "तुमची व्यवसाय लिस्टिंग लोड होऊ शकली नाही",
+          "tooManyImages": "जास्तीत जास्त 5 प्रतिमांना परवानगी आहे",
+          "tooManyImagesDesc": "फक्त पहिल्या 5 ठेवण्यात आल्या आहेत.",
+          "nameRequired": "व्यवसायाचे नाव आवश्यक आहे",
+          "typeRequired": "व्यवसायाचा प्रकार आवश्यक आहे",
+          "descriptionRequired": "वर्णन आवश्यक आहे",
+          "galaRequired": "गाळा क्रमांक आवश्यक आहे",
+          "buildingRequired": "इमारत क्रमांक आवश्यक आहे",
+          "gstRequired": "GST माहिती आवश्यक आहे",
+          "contactRequired": "संपर्क क्रमांक आवश्यक आहे",
+          "updated": "लिस्टिंग अद्ययावत केली",
+          "created": "लिस्टिंग तयार केली",
+          "saveError": "लिस्टिंग जतन होऊ शकली नाही"
+        },
+        "title": "माझा व्यवसाय",
+        "description": "फेडरेशन डिरेक्टरीमध्ये तुमची व्यवसाय लिस्टिंग व्यवस्थापित करा.",
+        "addListing": "लिस्टिंग जोडा",
+        "form": {
+          "editTitle": "लिस्टिंग संपादित करा",
+          "createTitle": "तुमची लिस्टिंग तयार करा",
+          "cancel": "रद्द करा",
+          "nameLabel": "व्यवसायाचे नाव",
+          "namePlaceholder": "उदा. Shree Metal Works",
+          "typeLabel": "व्यवसायाचा प्रकार",
+          "typePlaceholder": "उदा. CNC मशिनिंग",
+          "descriptionLabel": "वर्णन",
+          "descriptionPlaceholder": "तुमचा व्यवसाय काय करतो?",
+          "galaLabel": "गाळा क्रमांक",
+          "galaPlaceholder": "उदा. 2",
+          "buildingLabel": "इमारत क्रमांक",
+          "buildingPlaceholder": "उदा. 4",
+          "occupancyLabel": "व्याप्ती",
+          "gstLabel": "GST माहिती",
+          "gstPlaceholder": "GSTIN",
+          "contactLabel": "संपर्क क्रमांक",
+          "contactPlaceholder": "उदा. 9876543210",
+          "keywordsLabel": "कीवर्ड",
+          "keywordsHelp": "उदा. cnc मशिनिंग, वेल्डिंग — यामुळे लोकांना शोधात तुम्हाला शोधणे सोपे होते",
+          "imagesLabel": "प्रतिमा (जास्तीत जास्त 5)",
+          "imagesHelp": "नवीन प्रतिमा अपलोड केल्यास सर्व सध्याच्या प्रतिमा बदलल्या जातील.",
+          "saving": "जतन करत आहे…",
+          "saveChanges": "बदल जतन करा",
+          "createListing": "लिस्टिंग तयार करा"
+        },
+        "emptyState": {
+          "title": "अद्याप कोणतीही व्यवसाय लिस्टिंग नाही",
+          "description": "तुमची लिस्टिंग तयार करा जेणेकरून इतर सदस्यांना फेडरेशन डिरेक्टरीमध्ये तुमचा व्यवसाय शोधता येईल.",
+          "action": "+ तुमची लिस्टिंग तयार करा"
+        },
+        "verifiedBadge": "पडताळणी केलेला व्यवसाय",
+        "buildingBadge": "इमारत",
+        "galaBadge": "गाळा",
+        "gstLabel": "GST: ",
+        "contactLabel": "संपर्क: ",
+        "editListingButton": "लिस्टिंग संपादित करा"
+      },
+      "title": "अधिक",
+      "items": {
+        "grievances": {
+          "label": "तक्रारी",
+          "description": "महासंघाकडे तक्रार नोंदवा आणि तिची स्थिती पहा"
+        },
+        "dues": {
+          "label": "थकबाकी",
+          "description": "तुमची सदस्यता थकबाकी आणि पेमेंट स्थिती पहा"
+        },
+        "documents": {
+          "label": "कागदपत्रे",
+          "description": "उपविधी, इतिवृत्त, परिपत्रके आणि इतर फाइल्स"
+        }
+      },
+      "grievances": {
+        "toast": {
+          "loadError": "तुमच्या तक्रारी लोड होऊ शकल्या नाहीत",
+          "required": "विषय आणि तपशील आवश्यक आहेत",
+          "filed": "तक्रार नोंदवली गेली",
+          "filedDesc": "महासंघ कार्यालयाला कळवण्यात आले आहे.",
+          "fileError": "तक्रार नोंदवता आली नाही"
+        },
+        "fileButton": "तक्रार नोंदवा",
+        "title": "तक्रारी",
+        "description": "महासंघाकडे तक्रार नोंदवा आणि तिची स्थिती पहा.",
+        "emptyState": {
+          "title": "अद्याप कोणतीही तक्रार नाही",
+          "description": "एखाद्या गोष्टीकडे महासंघाचे लक्ष हवे असल्यास, येथे तक्रार नोंदवा आणि तिची प्रगती पहा."
+        },
+        "federationResponse": "महासंघाचा प्रतिसाद",
+        "dialog": {
+          "title": "तक्रार नोंदवा",
+          "description": "आम्हाला काय अडचण आहे ते सांगा — महासंघ कार्यालय त्याचा आढावा घेऊन उत्तर देईल."
+        },
+        "form": {
+          "subjectLabel": "विषय",
+          "subjectPlaceholder": "उदा. सामाईक क्षेत्रात पाणी गळती",
+          "descriptionLabel": "तपशील",
+          "descriptionPlaceholder": "समस्येचे सविस्तर वर्णन करा…",
+          "cancel": "रद्द करा",
+          "filing": "नोंदवत आहे…",
+          "submit": "तक्रार नोंदवा"
+        }
+      }
+    },
+    "misc": {
+      "dues": {
+        "loadError": "तुमची थकबाकी लोड होऊ शकली नाही",
+        "title": "थकबाकी",
+        "description": "महासंघाकडील तुमच्या सदस्यता थकबाकीच्या नोंदी.",
+        "pendingAcross": "मध्ये प्रलंबित",
+        "record": "नोंद",
+        "contactNotice": "थकबाकी भरण्यासाठी महासंघ कार्यालयाशी संपर्क साधा.",
+        "emptyState": {
+          "title": "अद्याप थकबाकीची नोंद नाही",
+          "description": "महासंघ कार्यालयाने नोंद केल्यानंतर तुमची सदस्यता थकबाकी येथे दिसेल."
+        }
+      },
+      "documents": {
+        "category": {
+          "bylaws": "उपविधी",
+          "minutes": "इतिवृत्त",
+          "circulars": "परिपत्रके",
+          "other": "इतर",
+          "all": "सर्व"
+        },
+        "loadError": "कागदपत्रे लोड होऊ शकली नाहीत",
+        "title": "कागदपत्रे",
+        "description": "महासंघाने शेअर केलेले उपविधी, इतिवृत्त, परिपत्रके आणि इतर फाइल्स.",
+        "emptyState": {
+          "title": "अद्याप कोणतेही कागदपत्र नाही",
+          "filteredDescription": "या श्रेणीत अद्याप कोणतेही कागदपत्र नाही. वेगळे फिल्टर वापरून पहा.",
+          "description": "महासंघ कार्यालयाने शेअर केलेली कागदपत्रे येथे दिसतील."
+        },
+        "table": {
+          "title": "शीर्षक",
+          "category": "श्रेणी",
+          "date": "तारीख",
+          "download": "डाउनलोड"
+        },
+        "downloadAriaLabel": "डाउनलोड",
+        "downloadButton": "डाउनलोड"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "पुन्हा स्वागत आहे",
+      "subtitle": "सदस्य पोर्टलमध्ये लॉग इन करा.",
+      "emailLabel": "ईमेल",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "पासवर्ड",
+      "forgotPasswordLink": "पासवर्ड विसरलात?",
+      "passwordPlaceholder": "••••••••",
+      "errorFallback": "लॉगिन अयशस्वी",
+      "submitLoading": "लॉग इन होत आहे…",
+      "submitButton": "लॉग इन करा",
+      "newMemberPrompt": "नवीन सदस्य आहात?",
+      "createAccountLink": "खाते तयार करा"
+    },
+    "signup": {
+      "errorFallback": "तुमचे खाते तयार करता आले नाही",
+      "successTitle": "खाते तयार झाले",
+      "successDescription": "लॉग इन करण्यापूर्वी एका अ‍ॅडमिनला तुमचे खाते मंजूर करावे लागेल — असे होताच तुम्ही साइन इन करू शकाल.",
+      "backToLoginLink": "लॉगिनवर परत जा",
+      "title": "तुमचे खाते तयार करा",
+      "subtitle": "सक्रिय होण्यापूर्वी प्रत्येक नवीन साइनअपचा आढावा अ‍ॅडमिनकडून घेतला जातो.",
+      "fields": {
+        "fullName": "पूर्ण नाव",
+        "username": "युजरनेम",
+        "email": "ईमेल",
+        "phone": "फोन",
+        "password": "पासवर्ड",
+        "photoAdd": "प्रोफाइल फोटो जोडा",
+        "photoChange": "फोटो बदला",
+        "photoHelp": "ऐच्छिक, पण अ‍ॅडमिनला तुम्हाला ओळखण्यास मदत करते.",
+        "buildingNumber": "बिल्डिंग नंबर",
+        "galaNumber": "गाळा नंबर",
+        "occupancyType": "व्याप्ती",
+        "occupancyOwner": "मालक",
+        "occupancyTenant": "भाडेकरू",
+        "businessName": "व्यवसायाचे नाव",
+        "businessType": "व्यवसायाचा प्रकार",
+        "businessTypePlaceholder": "उदा. सीएनसी मशिनिंग"
+      },
+      "submitLoading": "खाते तयार करत आहे…",
+      "submitButton": "खाते तयार करा",
+      "alreadyMemberPrompt": "आधीच सदस्य आहात?",
+      "loginLink": "लॉग इन करा"
+    },
+    "forgotPassword": {
+      "sentTitle": "तुमचा ईमेल तपासा",
+      "confirmationPrefix": "जर ",
+      "confirmationSuffix": " साठी खाते अस्तित्वात असेल, तर रीसेट लिंक पाठवला जात आहे. तो एका तासात कालबाह्य होईल.",
+      "title": "तुमचा पासवर्ड रीसेट करा",
+      "subtitle": "आम्ही तुम्हाला नवीन पासवर्ड सेट करण्यासाठी एक लिंक ईमेल करू.",
+      "emailPlaceholder": "you@example.com",
+      "submitLoading": "पाठवत आहे…",
+      "submitButton": "रीसेट लिंक पाठवा",
+      "backToLoginLink": "लॉगिनवर परत जा"
+    },
+    "resetPassword": {
+      "title": "नवीन पासवर्ड सेट करा",
+      "subtitle": "असा पासवर्ड निवडा जो तुम्ही आधी वापरलेला नाही.",
+      "newPasswordPlaceholder": "नवीन पासवर्ड",
+      "errorFallback": "रीसेट लिंक अवैध आहे किंवा कालबाह्य झाला आहे",
+      "submitLoading": "अपडेट करत आहे…",
+      "submitButton": "नवीन पासवर्ड सेट करा"
+    },
+    "checkin": {
+      "workingMessage": "तुम्हाला चेक-इन केले जात आहे…",
+      "successTitle": "तुमचे चेक-इन झाले आहे",
+      "errorTitle": "चेक-इन अयशस्वी झाले",
+      "errorFallback": "तुम्हाला चेक-इन करता आले नाही",
+      "dashboardLink": "डॅशबोर्डवर जा"
+    }
+  },
+  "live": {
+    "nav": {
+      "home": "मुख्यपृष्ठ",
+      "about": "आमच्याविषयी",
+      "contact": "संपर्क",
+      "ariaLabel": "सीएमएस पूर्वावलोकन नेव्हिगेशन"
+    },
+    "chrome": {
+      "previewBadge": "सीएमएस पूर्वावलोकन — लाइव्ह साइटपासून वेगळे"
+    },
+    "common": {
+      "checkAgainButton": "पुन्हा तपासा",
+      "tryAgainButton": "पुन्हा प्रयत्न करा",
+      "errorTitle": "हे पेज लोड होऊ शकले नाही"
+    },
+    "home": {
+      "loading": "मुख्यपृष्ठ कंटेंट लोड होत आहे…",
+      "emptyState": {
+        "title": "मुख्यपृष्ठ कंटेंट अद्याप जोडलेले नाही",
+        "description": "सीएमएसमध्ये \"home\" साठी साइट कंटेंट अद्याप जोडलेले नाही. ते बॅकएंडवरून जोडा (scripts/seedSiteContent.js), नंतर पुन्हा तपासा."
+      },
+      "toastTitle": "मुख्यपृष्ठ कंटेंट लोड होऊ शकले नाही",
+      "errorFallback": "मुख्यपृष्ठ कंटेंट लोड होऊ शकले नाही",
+      "introHeading": "पार्कबद्दल"
+    },
+    "about": {
+      "loading": "आमच्याविषयी कंटेंट लोड होत आहे…",
+      "emptyState": {
+        "title": "आमच्याविषयी कंटेंट अद्याप जोडलेले नाही",
+        "description": "सीएमएसमध्ये \"about\" साठी साइट कंटेंट अद्याप जोडलेले नाही. ते बॅकएंडवरून जोडा (scripts/seedSiteContent.js), नंतर पुन्हा तपासा."
+      },
+      "toastTitle": "आमच्याविषयी कंटेंट लोड होऊ शकले नाही",
+      "errorFallback": "आमच्याविषयी कंटेंट लोड होऊ शकले नाही",
+      "visionKicker": "आमची दूरदृष्टी",
+      "historyHeading": "आमचा इतिहास",
+      "leadershipHeading": "नेतृत्व"
+    },
+    "contact": {
+      "loading": "संपर्क कंटेंट लोड होत आहे…",
+      "emptyState": {
+        "title": "संपर्क कंटेंट अद्याप जोडलेले नाही",
+        "description": "सीएमएसमध्ये \"contact\" साठी साइट कंटेंट अद्याप जोडलेले नाही. ते बॅकएंडवरून जोडा (scripts/seedSiteContent.js), नंतर पुन्हा तपासा."
+      },
+      "toastTitle": "संपर्क कंटेंट लोड होऊ शकले नाही",
+      "errorFallback": "संपर्क कंटेंट लोड होऊ शकले नाही",
+      "kicker": "संपर्क साधा",
+      "heroTitle": "आम्ही पार्कमधील मालक आणि भाडेकरूंच्या मदतीसाठी येथे आहोत",
+      "detailsHeading": "संपर्क तपशील",
+      "noDetails": "अद्याप कोणतेही संपर्क तपशील जोडलेले नाहीत.",
+      "mapTitle": "स्थान नकाशा",
+      "callLabel": "कार्यालयाला कॉल करा",
+      "emailLabel": "आम्हाला लिहा",
+      "emailCopied": "ईमेल कॉपी झाला",
+      "copyEmail": "ईमेल पत्ता कॉपी करा",
+      "copied": "कॉपी झाले",
+      "visitLabel": "भेट द्या",
+      "getDirections": "दिशा मिळवा",
+      "loadMap": "नकाशा लोड करा"
+    }
+  },
+  "vacancies": {
+    "title": "रिक्त जागा",
+    "description": "फेडरेशनच्या सदस्यांनी आणि कर्मचाऱ्यांनी पोस्ट केलेल्या नोकरीच्या संधी.",
+    "postButton": "+ रिक्त जागा पोस्ट करा",
+    "emptyState": {
+      "title": "सध्या कोणतीही रिक्त जागा नाही",
+      "description": "नवीन नोकरीच्या संधी नियमितपणे पोस्ट केल्या जातात — लवकरच पुन्हा तपासा."
+    },
+    "common": {
+      "eligibilityLabel": "पात्रता",
+      "cancelButton": "रद्द करा"
+    },
+    "card": {
+      "applyByPrefix": "अर्ज करण्याची अंतिम तारीख",
+      "postedByPrefix": "पोस्ट करणारे",
+      "applyButton": "अर्ज करा"
+    },
+    "applyModal": {
+      "titlePrefix": "अर्ज:",
+      "description": "तुमचा तपशील थेट या रिक्त जागेची पोस्ट करणाऱ्या व्यक्तीकडे जातो. खाते आवश्यक नाही.",
+      "nameLabel": "तुमचे नाव",
+      "namePlaceholder": "पूर्ण नाव",
+      "emailLabel": "ईमेल",
+      "emailPlaceholder": "you@example.com",
+      "phoneLabel": "फोन",
+      "phonePlaceholder": "10 अंकी क्रमांक",
+      "coverNoteLabel": "कव्हर नोट",
+      "optionalTag": "(ऐच्छिक)",
+      "coverNotePlaceholder": "तुम्ही यासाठी योग्य का आहात हे त्यांना सांगा…",
+      "resumeLabel": "रिझ्युमे",
+      "resumeOptionalTag": "(ऐच्छिक, PDF किंवा Word)",
+      "selectedFilePrefix": "निवडलेले:",
+      "submittingButton": "सबमिट करत आहे…",
+      "submitButton": "अर्ज सादर करा",
+      "successTitle": "अर्ज सादर झाला",
+      "successThanksPrefix": "धन्यवाद",
+      "successMiddle": "— तुमचा अर्ज",
+      "successSuffix": "साठी पाठवला गेला आहे. तुम्ही योग्य असाल तर पोस्ट करणारी व्यक्ती संपर्क साधेल.",
+      "doneButton": "पूर्ण झाले"
+    },
+    "createModal": {
+      "title": "नवीन रिक्त जागा पोस्ट करा",
+      "description": "अंतिम तारखेपर्यंत ही सर्वांना लगेच दिसेल.",
+      "titleLabel": "शीर्षक",
+      "titlePlaceholder": "उदा. मशीन ऑपरेटर",
+      "descriptionLabel": "वर्णन",
+      "descriptionPlaceholder": "भूमिका, जबाबदाऱ्या, कामाचे तास…",
+      "eligibilityPlaceholder": "अनुभव, कौशल्ये, आवश्यक पात्रता…",
+      "deadlineLabel": "अर्जाची अंतिम तारीख",
+      "postingButton": "पोस्ट होत आहे…",
+      "submitButton": "रिक्त जागा पोस्ट करा"
+    },
+    "toast": {
+      "loadErrorTitle": "रिक्त जागा लोड होऊ शकल्या नाहीत",
+      "vacancyPostedTitle": "रिक्त जागा पोस्ट केली",
+      "postErrorTitle": "रिक्त जागा पोस्ट होऊ शकली नाही",
+      "applyErrorTitle": "अर्ज सादर होऊ शकला नाही"
+    }
+  }
+}

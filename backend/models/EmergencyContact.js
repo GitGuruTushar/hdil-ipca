@@ -1,12 +1,8 @@
 const mongoose = require('mongoose');
+const { localizedFieldSchema } = require('../utils/localizedField');
 
 const EmergencyContactSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Please add a name'],
-    trim: true,
-    maxlength: [50, 'Name can not be more than 50 characters']
-  },
+  name: localizedFieldSchema({ required: [true, 'Please add a name'], maxlength: [50, 'Name can not be more than 50 characters'] }),
   number: {
     type: String,
     required: [true, 'Please add a number'],
@@ -14,7 +10,13 @@ const EmergencyContactSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Please add a category'],
-    enum:  ['Emergency', 'Service Provider', 'Other']
+    enum: ['Emergency', 'Park', 'Service Provider', 'Other']
+  },
+  note: localizedFieldSchema({ maxlength: [140, 'Note can not be more than 140 characters'] }),
+  hours: localizedFieldSchema({ maxlength: [60, 'Hours can not be more than 60 characters'] }),
+  available247: {
+    type: Boolean,
+    default: false
   }
 });
 
