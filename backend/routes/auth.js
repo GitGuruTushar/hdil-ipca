@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const fs = require('fs');
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -10,6 +11,8 @@ const AppError = require('../utils/AppError');
 const sendEmail = require('../utils/sendEmail');
 const logAudit = require('../utils/auditLog');
 const notify = require('../utils/notify');
+const cloudinary = require('../utils/cloudinary');
+const { upload, enforceSizeLimits, IMAGE_TYPES } = require('../config/upload');
 
 const signToken = (user) =>
   jwt.sign(
@@ -32,19 +35,65 @@ const registerFields = [
   check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
 ];
 
+// Required specifically at self-registration so an admin has enough context to
+// approve/reject an applicant — NOT required for admin-direct-create (POST
+// /register below), which never collects these.
+const signupOnlyFields = [
+  check('phone', 'A valid 10-digit phone number is required').matches(/^[6-9]\d{9}$/),
+  check('buildingNumber', 'Building number is required').isNumeric(),
+  check('galaNumber', 'Gala number is required').isNumeric(),
+  check('occupancyType', 'Occupancy type must be owner or tenant').isIn(['owner', 'tenant']),
+  check('businessName', 'Business name is required').not().isEmpty(),
+  check('businessType', 'Business type is required').not().isEmpty()
+];
+
 // @route   POST /api/auth/signup
 // @desc    Self-registration by a prospective member — account stays 'pending' until an admin approves it
 // @access  Public
 router.post(
   '/signup',
-  registerFields,
+  upload.single('photo'),
+  [...registerFields, ...signupOnlyFields],
   asyncHandler(async (req, res) => {
-    runValidation(req);
-    const { username, fullName, email, password, phone } = req.body;
+    try {
+      runValidation(req);
+    } catch (err) {
+      if (req.file) fs.unlinkSync(req.file.path);
+      throw err;
+    }
+
+    const {
+      username,
+      fullName,
+      email,
+      password,
+      phone,
+      buildingNumber,
+      galaNumber,
+      occupancyType,
+      businessName,
+      businessType
+    } = req.body;
 
     const existing = await User.findOne({ $or: [{ email }, { username }] });
     if (existing) {
+      if (req.file) fs.unlinkSync(req.file.path);
       throw new AppError('An account with that email or username already exists', 400);
+    }
+
+    let profilePicture = null;
+    if (req.file) {
+      if (!IMAGE_TYPES.includes(req.file.mimetype)) {
+        fs.unlinkSync(req.file.path);
+        throw new AppError(`Unsupported file type: ${req.file.mimetype}. Allowed: jpg, png, webp.`, 400);
+      }
+      enforceSizeLimits(req.file);
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, { folder: 'profiles', resource_type: 'image' });
+        profilePicture = result.secure_url;
+      } finally {
+        fs.unlinkSync(req.file.path);
+      }
     }
 
     const user = await User.create({
@@ -53,6 +102,12 @@ router.post(
       email,
       phone,
       password,
+      buildingNumber,
+      galaNumber,
+      occupancyType,
+      businessName,
+      businessType,
+      profilePicture,
       role: 'member',
       status: 'pending'
     });
@@ -63,7 +118,7 @@ router.post(
         recipientId: admin.id,
         type: 'new_signup',
         title: 'New member awaiting approval',
-        body: `${fullName} (${email}) just signed up.`
+        body: `${fullName} (${email}) — Bldg ${buildingNumber}, Gala ${galaNumber}, ${occupancyType} — just signed up.`
       }).catch(() => {});
     }
 
@@ -235,7 +290,7 @@ router.post(
       const resetToken = user.getResetPasswordToken();
       await user.save({ validateBeforeSave: false });
 
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
       try {
         await sendEmail({
           to: user.email,
@@ -324,6 +379,82 @@ router.put(
       msg: 'Profile updated',
       token: passwordChanged ? signToken(user) : undefined
     });
+  })
+);
+
+// @route   POST /api/auth/me/photo
+// @desc    Upload/replace the caller's own profile picture
+// @access  Private
+router.post(
+  '/me/photo',
+  protect,
+  upload.single('photo'),
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw new AppError('A photo is required', 400);
+    if (!IMAGE_TYPES.includes(req.file.mimetype)) {
+      fs.unlinkSync(req.file.path);
+      throw new AppError(`Unsupported file type: ${req.file.mimetype}. Allowed: jpg, png, webp.`, 400);
+    }
+    enforceSizeLimits(req.file);
+
+    let result;
+    try {
+      result = await cloudinary.uploader.upload(req.file.path, { folder: 'profiles', resource_type: 'image' });
+    } finally {
+      fs.unlinkSync(req.file.path);
+    }
+
+    const user = await User.findById(req.user.id);
+    user.profilePicture = result.secure_url;
+    await user.save();
+    res.json({ profilePicture: user.profilePicture });
+  })
+);
+
+// @route   DELETE /api/auth/me/photo
+// @desc    Remove the caller's own profile picture (reverts to generated initials)
+// @access  Private
+router.delete(
+  '/me/photo',
+  protect,
+  asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(req.user.id, { profilePicture: null });
+    res.json({ msg: 'Profile photo removed' });
+  })
+);
+
+// @route   GET /api/auth/directory
+// @desc    Search approved members to start a conversation with. Deliberately NOT
+//          admin-only (unlike GET /users below) — any authenticated role needs this
+//          to find people to message. The public search route never indexes users
+//          for privacy; this is a different, authenticated-only lookup.
+// @access  Private (any logged-in role)
+router.get(
+  '/directory',
+  protect,
+  asyncHandler(async (req, res) => {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const filter = { status: 'approved', _id: { $ne: req.user.id } };
+
+    const q = (req.query.q || '').trim();
+    if (q) {
+      // Escape regex special characters so arbitrary user input can't throw or behave unexpectedly.
+      const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      filter.$or = [{ fullName: re }, { username: re }];
+    }
+
+    const total = await User.countDocuments(filter);
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    const users = await User.find(filter)
+      .select('fullName username role profilePicture lastSeenAt')
+      .sort({ fullName: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.json({ users, page, totalPages, total });
   })
 );
 

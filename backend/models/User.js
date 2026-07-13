@@ -16,9 +16,46 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Full name can not be more than 100 characters']
   },
+  // Required + validated at self-registration (POST /auth/signup) so admins have
+  // a way to reach an applicant; stays optional here at the schema level so
+  // admin-direct-create (POST /auth/register), which never collects it, keeps working.
   phone: {
     type: String,
     trim: true
+  },
+  // Cloudinary secure_url; null/undefined means the UI falls back to generated initials.
+  profilePicture: {
+    type: String,
+    default: null
+  },
+  // The next 5 fields are collected at self-registration for admin-approval context
+  // (which building/gala this applicant is in, what business they run) — deliberately
+  // NOT the full business directory listing (Industry model), which stays a separate,
+  // optional step. Optional at the schema level for the same admin-direct-create reason as phone.
+  buildingNumber: {
+    type: Number
+  },
+  galaNumber: {
+    type: Number
+  },
+  occupancyType: {
+    type: String,
+    enum: ['owner', 'tenant']
+  },
+  businessName: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Business name can not be more than 100 characters']
+  },
+  businessType: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Business type can not be more than 100 characters']
+  },
+  // Updated on socket disconnect (Phase 5 realtime) — powers "last seen" in chat.
+  lastSeenAt: {
+    type: Date,
+    default: null
   },
   email: {
     type: String,
