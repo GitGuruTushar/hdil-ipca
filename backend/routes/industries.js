@@ -158,7 +158,8 @@ router.post(
     check('buildingNumber', 'Building number is required').isNumeric(),
     check('occupancyType', 'Occupancy type must be owner or tenant').isIn(['owner', 'tenant']),
     check('gstInfo', 'GST information is required').not().isEmpty(),
-    check('contactNumber', 'Contact number is required').not().isEmpty()
+    check('contactNumber', 'Contact number is required').not().isEmpty(),
+    check('foundedYear', 'Founded year must be a valid year').optional({ checkFalsy: true }).isInt({ min: 1800, max: new Date().getFullYear() })
   ],
   asyncHandler(async (req, res) => {
     runValidation(req);
@@ -176,6 +177,7 @@ router.post(
       businessType: parseLocalizedField(req.body.businessType),
       description: parseLocalizedField(req.body.description),
       aboutUs: req.body.aboutUs !== undefined ? parseLocalizedField(req.body.aboutUs) : undefined,
+      foundedYear: req.body.foundedYear !== undefined && req.body.foundedYear !== '' ? req.body.foundedYear : undefined,
       galaNumber,
       buildingNumber,
       occupancyType,
@@ -209,7 +211,8 @@ router.put(
     check('buildingNumber', 'Building number is required').optional().isNumeric(),
     check('occupancyType', 'Occupancy type must be owner or tenant').optional().isIn(['owner', 'tenant']),
     check('gstInfo', 'GST information is required').optional().not().isEmpty(),
-    check('contactNumber', 'Contact number is required').optional().not().isEmpty()
+    check('contactNumber', 'Contact number is required').optional().not().isEmpty(),
+    check('foundedYear', 'Founded year must be a valid year').optional({ checkFalsy: true }).isInt({ min: 1800, max: new Date().getFullYear() })
   ],
   asyncHandler(async (req, res) => {
     runValidation(req);
@@ -227,6 +230,9 @@ router.put(
     const plainFields = ['galaNumber', 'buildingNumber', 'occupancyType', 'gstInfo', 'contactNumber'];
     for (const field of plainFields) {
       if (req.body[field] !== undefined) industry[field] = req.body[field];
+    }
+    if (req.body.foundedYear !== undefined) {
+      industry.foundedYear = req.body.foundedYear === '' ? undefined : req.body.foundedYear;
     }
     if (req.body.businessHours !== undefined) {
       industry.businessHours = parseJsonField(req.body.businessHours, 'businessHours');

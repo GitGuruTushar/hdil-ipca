@@ -9,6 +9,9 @@ const IndustrySchema = new mongoose.Schema({
   // `description` stays the short teaser reused in the compact card/quick-view
   // popup, which would look broken with a 3000-char wall of text.
   aboutUs: localizedFieldSchema({ maxlength: [3000, 'About us can not be more than 3000 characters'] }),
+  foundedYear: {
+    type: Number
+  },
   galaNumber: {
     type: Number,
     required: [true, 'Please add a gala number']

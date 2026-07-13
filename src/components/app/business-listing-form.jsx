@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, X, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
 import ChipInput from "@/components/app/chip-input";
 import { LocalizedInput, LocalizedTextarea, ContentLanguageTabs } from "@/components/app/localized-fields";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { emptyLocalized } from "@/utils/localizedContent";
 import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +62,7 @@ const emptyForm = () => ({
   businessType: emptyLocalized(),
   description: emptyLocalized(),
   aboutUs: emptyLocalized(),
+  foundedYear: "",
   galaNumber: "",
   buildingNumber: "",
   occupancyType: "owner",
@@ -72,6 +74,16 @@ const emptyForm = () => ({
   socialLinks: emptySocialLinks(),
 });
 
+const SECTIONS = [
+  { value: "basics", label: "Basics" },
+  { value: "about", label: "About us" },
+  { value: "hours", label: "Hours" },
+  { value: "social", label: "Social" },
+  { value: "materials", label: "Materials" },
+  { value: "products", label: "Products" },
+  { value: "gallery", label: "Gallery" },
+];
+
 // Shared rich-template business-listing editor, used by both the member
 // self-service page and the admin edit dialog — same fields, same depth,
 // since owners and admins have identical edit permissions server-side.
@@ -79,6 +91,7 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
   const { toast } = useToast();
   const { t } = useI18n();
   const [formLang, setFormLang] = useState("en");
+  const [tab, setTab] = useState("basics");
   const [form, setForm] = useState(emptyForm());
   const [products, setProducts] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
@@ -96,6 +109,7 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
         businessType: initial.businessType || emptyLocalized(),
         description: initial.description || emptyLocalized(),
         aboutUs: initial.aboutUs || emptyLocalized(),
+        foundedYear: initial.foundedYear != null ? String(initial.foundedYear) : "",
         galaNumber: initial.galaNumber != null ? String(initial.galaNumber) : "",
         buildingNumber: initial.buildingNumber != null ? String(initial.buildingNumber) : "",
         occupancyType: initial.occupancyType || "owner",
@@ -124,6 +138,7 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
     }
     setNewImageFiles([]);
     setFormLang("en");
+    setTab("basics");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial?._id]);
 
@@ -214,6 +229,7 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
       fd.append("businessType", JSON.stringify(form.businessType));
       fd.append("description", JSON.stringify(form.description));
       fd.append("aboutUs", JSON.stringify(form.aboutUs));
+      fd.append("foundedYear", form.foundedYear);
       fd.append("galaNumber", form.galaNumber);
       fd.append("buildingNumber", form.buildingNumber);
       fd.append("occupancyType", form.occupancyType);
@@ -259,6 +275,22 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
         />
       </div>
 
+      <Tabs value={tab} onValueChange={setTab}>
+        <div className="overflow-x-auto -mx-1 px-1">
+          <TabsList className="app-glass h-auto inline-flex flex-nowrap gap-1 rounded-full bg-white/70 p-1">
+            {SECTIONS.map((s) => (
+              <TabsTrigger
+                key={s.value}
+                value={s.value}
+                className="whitespace-nowrap rounded-full px-4 py-1.5 text-[13px] font-semibold text-body data-[state=active]:bg-gradient-to-r data-[state=active]:from-madder data-[state=active]:to-grape data-[state=active]:text-white data-[state=active]:shadow-none"
+              >
+                {s.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+
+      <TabsContent value="basics" className="mt-4 space-y-5">
       {/* Basics */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-4">
         <h3 className="font-display font-bold text-ink text-[14px]">Basics</h3>
@@ -300,6 +332,20 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
+            <label className={labelClass}>Founded year (optional)</label>
+            <input
+              type="number"
+              value={form.foundedYear}
+              onChange={(e) => setForm((f) => ({ ...f, foundedYear: e.target.value }))}
+              placeholder="e.g. 1998"
+              min={1800}
+              max={new Date().getFullYear()}
+              className={fieldClass}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
             <label className={labelClass}>GST information</label>
             <input value={form.gstInfo} onChange={(e) => setForm((f) => ({ ...f, gstInfo: e.target.value }))} maxLength={50} required className={fieldClass} />
           </div>
@@ -313,7 +359,9 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
           <ChipInput value={form.keywords} onChange={(keywords) => setForm((f) => ({ ...f, keywords }))} />
         </div>
       </div>
+      </TabsContent>
 
+      <TabsContent value="about" className="mt-4 space-y-5">
       {/* About us */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-3">
         <h3 className="font-display font-bold text-ink text-[14px]">About us (long-form — shown on your full page)</h3>
@@ -328,7 +376,9 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
         />
         <p className="text-[11px] text-body">{(form.aboutUs[formLang] || "").length}/3000</p>
       </div>
+      </TabsContent>
 
+      <TabsContent value="hours" className="mt-4 space-y-5">
       {/* Business hours */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-2">
         <h3 className="font-display font-bold text-ink text-[14px] mb-2">Business hours</h3>
@@ -373,7 +423,9 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
           );
         })}
       </div>
+      </TabsContent>
 
+      <TabsContent value="social" className="mt-4 space-y-5">
       {/* Social links */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-3">
         <h3 className="font-display font-bold text-ink text-[14px]">Website & social links</h3>
@@ -391,13 +443,17 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
           ))}
         </div>
       </div>
+      </TabsContent>
 
+      <TabsContent value="materials" className="mt-4 space-y-5">
       {/* Materials */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-2">
         <h3 className="font-display font-bold text-ink text-[14px]">Materials</h3>
         <ChipInput value={form.materials} onChange={(materials) => setForm((f) => ({ ...f, materials }))} placeholder="Add a material and press Enter…" />
       </div>
+      </TabsContent>
 
+      <TabsContent value="products" className="mt-4 space-y-5">
       {/* Products */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-3">
         <div className="flex items-center justify-between">
@@ -481,7 +537,9 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
           ))}
         </div>
       </div>
+      </TabsContent>
 
+      <TabsContent value="gallery" className="mt-4 space-y-5">
       {/* Gallery */}
       <div className="app-glass glass-shadow rounded-2xl p-4 space-y-3">
         <h3 className="font-display font-bold text-ink text-[14px]">Business gallery ({existingImages.length + newImageFiles.length}/{MAX_BUSINESS_IMAGES})</h3>
@@ -527,6 +585,8 @@ export default function BusinessListingForm({ mode, initial, prefillDefaults, on
         </div>
         <p className="text-[11px] text-body">New photos are added on save; existing photos update immediately.</p>
       </div>
+      </TabsContent>
+      </Tabs>
 
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
         {onCancel && (
