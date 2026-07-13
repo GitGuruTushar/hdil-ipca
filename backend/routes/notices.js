@@ -3,7 +3,6 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const fs = require('fs');
 const Notice = require('../models/Notice');
-const Industry = require('../models/Industry');
 const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
@@ -42,18 +41,31 @@ const runValidation = (req) => {
   }
 };
 
+const parseJsonField = (raw, fieldName) => {
+  if (raw === undefined) return undefined;
+  if (typeof raw !== 'string') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    throw new AppError(`${fieldName} is not valid JSON`, 400);
+  }
+};
+
 // A notice's targetAudience matches a member if it's open to everyone, or if it's
-// scoped to owners/tenants and the member holds a listing of that occupancy type.
-const audienceMatches = (notice, occupancyTypes) => {
+// scoped to owners/tenants and the member's own occupancy type matches.
+const audienceMatches = (notice, occupancyType) => {
   if (notice.targetAudience === 'everyone') return true;
-  if (notice.targetAudience === 'owners') return occupancyTypes.includes('owner');
-  if (notice.targetAudience === 'tenants') return occupancyTypes.includes('tenant');
+  if (notice.targetAudience === 'owners') return occupancyType === 'owner';
+  if (notice.targetAudience === 'tenants') return occupancyType === 'tenant';
   return false;
 };
 
 // @route   GET /api/notices
 // @desc    Admins see every notice (including expired); members see only unexpired
-//          notices targeted at their audience/building/gala based on their Industry listings
+//          notices matching their own signup profile (building/gala/occupancy) —
+//          not their Industry listings, so a member with no business listing can
+//          still be targeted. Hand-picked targetUsers are additive: a match there
+//          makes a notice visible regardless of audience/building/gala.
 // @access  Private (any logged-in member)
 router.get(
   '/',
@@ -66,10 +78,7 @@ router.get(
       return res.json(notices);
     }
 
-    const listings = await Industry.find({ owner: req.user.id });
-    const buildingNumbers = listings.map((l) => l.buildingNumber);
-    const galaNumbers = listings.map((l) => l.galaNumber);
-    const occupancyTypes = listings.map((l) => l.occupancyType);
+    const { buildingNumber, galaNumber, occupancyType } = req.user;
 
     // Members never see drafts, and scheduled notices only once publishAt has passed —
     // combined with the existing expiresAt/audience/building/gala targeting below.
@@ -84,9 +93,10 @@ router.get(
       .populate('createdBy', 'username fullName profilePicture');
 
     const visible = notices.filter((notice) => {
-      if (!audienceMatches(notice, occupancyTypes)) return false;
-      if (notice.targetBuilding != null && !buildingNumbers.includes(notice.targetBuilding)) return false;
-      if (notice.targetGala != null && !galaNumbers.includes(notice.targetGala)) return false;
+      if (notice.targetUsers.some((id) => id.toString() === req.user.id)) return true;
+      if (!audienceMatches(notice, occupancyType)) return false;
+      if (notice.targetBuildings.length > 0 && !notice.targetBuildings.includes(buildingNumber)) return false;
+      if (notice.targetGalas.length > 0 && !notice.targetGalas.includes(galaNumber)) return false;
       return true;
     });
 
@@ -112,7 +122,8 @@ router.get(
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate('createdBy', 'username fullName profilePicture');
+      .populate('createdBy', 'username fullName profilePicture')
+      .populate('targetUsers', 'username fullName profilePicture');
 
     res.json({ notices, page, totalPages, total });
   })
@@ -137,7 +148,7 @@ router.post(
   noticeFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
-    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt } = req.body;
+    const { title, content, expiresAt, targetAudience, status, publishAt } = req.body;
 
     const files = req.files || [];
     const attachments = files.length ? await uploadNoticeAttachments(files) : [];
@@ -147,8 +158,9 @@ router.post(
       content: sanitizeRichText(content),
       expiresAt,
       targetAudience,
-      targetBuilding,
-      targetGala,
+      targetBuildings: parseJsonField(req.body.targetBuildings, 'targetBuildings') || [],
+      targetGalas: parseJsonField(req.body.targetGalas, 'targetGalas') || [],
+      targetUsers: parseJsonField(req.body.targetUsers, 'targetUsers') || [],
       status,
       publishAt,
       attachments,
@@ -170,13 +182,14 @@ router.put(
     const notice = await Notice.findById(req.params.id);
     if (!notice) throw new AppError('Notice not found', 404);
 
-    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt, existingAttachments } = req.body;
+    const { title, content, expiresAt, targetAudience, status, publishAt, existingAttachments } = req.body;
     if (title !== undefined) notice.title = title;
     if (content !== undefined) notice.content = sanitizeRichText(content);
     if (expiresAt !== undefined) notice.expiresAt = expiresAt;
     if (targetAudience !== undefined) notice.targetAudience = targetAudience;
-    if (targetBuilding !== undefined) notice.targetBuilding = targetBuilding;
-    if (targetGala !== undefined) notice.targetGala = targetGala;
+    if (req.body.targetBuildings !== undefined) notice.targetBuildings = parseJsonField(req.body.targetBuildings, 'targetBuildings');
+    if (req.body.targetGalas !== undefined) notice.targetGalas = parseJsonField(req.body.targetGalas, 'targetGalas');
+    if (req.body.targetUsers !== undefined) notice.targetUsers = parseJsonField(req.body.targetUsers, 'targetUsers');
     if (status !== undefined) notice.status = status;
     if (publishAt !== undefined) notice.publishAt = publishAt;
 

@@ -7,6 +7,7 @@ import Pagination from "@/components/app/pagination";
 import ConfirmDialog from "@/components/app/confirm-dialog";
 import RichTextEditor from "@/components/app/rich-text-editor";
 import StatusPill from "@/components/app/status-pill";
+import TargetingPicker from "@/components/app/targeting-picker";
 import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -22,12 +23,6 @@ function classifyLocalFile(file) {
 
 const PAGE_SIZE = 10;
 
-const AUDIENCE_OPTIONS = [
-  { value: "everyone", label: "Everyone" },
-  { value: "owners", label: "Owners" },
-  { value: "tenants", label: "Tenants" },
-];
-
 const STATUS_OPTIONS = [
   { value: "draft", label: "Draft" },
   { value: "scheduled", label: "Scheduled" },
@@ -39,8 +34,9 @@ const emptyForm = {
   content: "",
   expiresAt: "",
   targetAudience: "everyone",
-  targetBuilding: "",
-  targetGala: "",
+  targetBuildings: [],
+  targetGalas: [],
+  targetUsers: [],
   status: "published",
   publishAt: "",
 };
@@ -152,8 +148,9 @@ export default function AdminNoticesPage() {
       content: item.content || "",
       expiresAt: toLocalInputValue(item.expiresAt),
       targetAudience: item.targetAudience || "everyone",
-      targetBuilding: item.targetBuilding != null ? String(item.targetBuilding) : "",
-      targetGala: item.targetGala != null ? String(item.targetGala) : "",
+      targetBuildings: item.targetBuildings || [],
+      targetGalas: item.targetGalas || [],
+      targetUsers: item.targetUsers || [],
       status: item.status || "published",
       publishAt: toLocalInputValue(item.publishAt),
     });
@@ -220,8 +217,9 @@ export default function AdminNoticesPage() {
       fd.append("expiresAt", toIsoOrUndefined(form.expiresAt) || "");
       fd.append("targetAudience", form.targetAudience);
       fd.append("status", form.status);
-      if (form.targetBuilding.trim() !== "") fd.append("targetBuilding", form.targetBuilding);
-      if (form.targetGala.trim() !== "") fd.append("targetGala", form.targetGala);
+      fd.append("targetBuildings", JSON.stringify(form.targetBuildings));
+      fd.append("targetGalas", JSON.stringify(form.targetGalas));
+      fd.append("targetUsers", JSON.stringify(form.targetUsers.map((u) => u._id)));
       if (form.status === "scheduled") {
         const iso = toIsoOrUndefined(form.publishAt);
         if (iso) fd.append("publishAt", iso);
@@ -405,36 +403,16 @@ export default function AdminNoticesPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-body uppercase tracking-wide mb-1">{t("admin.dashboard.notices.form.targetAudienceLabel", "Target audience")}</label>
-              <PillSelect
-                options={AUDIENCE_OPTIONS}
-                value={form.targetAudience}
-                onChange={(targetAudience) => setForm((f) => ({ ...f, targetAudience }))}
-                group="audience"
+              <label className="block text-[11px] font-bold text-body uppercase tracking-wide mb-1">{t("admin.dashboard.notices.form.targetingLabel", "Targeting")}</label>
+              <TargetingPicker
+                value={{
+                  targetAudience: form.targetAudience,
+                  targetBuildings: form.targetBuildings,
+                  targetGalas: form.targetGalas,
+                  targetUsers: form.targetUsers,
+                }}
+                onChange={(next) => setForm((f) => ({ ...f, ...next }))}
               />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[11px] font-bold text-body uppercase tracking-wide mb-1">{t("admin.dashboard.notices.form.targetBuildingLabel", "Target building (optional)")}</label>
-                <input
-                  type="number"
-                  value={form.targetBuilding}
-                  onChange={(e) => setForm((f) => ({ ...f, targetBuilding: e.target.value }))}
-                  placeholder={t("admin.dashboard.notices.form.targetBuildingPlaceholder", "e.g. 4")}
-                  className="w-full h-10 px-3 rounded-xl border border-line bg-white text-[13px] text-ink placeholder:text-body/60 outline-none focus:border-madder"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-body uppercase tracking-wide mb-1">{t("admin.dashboard.notices.form.targetGalaLabel", "Target gala (optional)")}</label>
-                <input
-                  type="number"
-                  value={form.targetGala}
-                  onChange={(e) => setForm((f) => ({ ...f, targetGala: e.target.value }))}
-                  placeholder={t("admin.dashboard.notices.form.targetGalaPlaceholder", "e.g. 2")}
-                  className="w-full h-10 px-3 rounded-xl border border-line bg-white text-[13px] text-ink placeholder:text-body/60 outline-none focus:border-madder"
-                />
-              </div>
             </div>
 
             <div>
@@ -539,14 +517,19 @@ export default function AdminNoticesPage() {
                         <td className="py-3 px-4">
                           <div className="flex flex-wrap items-center gap-1">
                             <StatusPill status={item.targetAudience} />
-                            {item.targetBuilding != null && (
+                            {item.targetBuildings?.length > 0 && (
                               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-ivory text-body whitespace-nowrap">
-                                {t("admin.dashboard.notices.table.buildingPrefix", "Bldg")} {item.targetBuilding}
+                                {t("admin.dashboard.notices.table.buildingPrefix", "Bldg")} {item.targetBuildings.join(", ")}
                               </span>
                             )}
-                            {item.targetGala != null && (
+                            {item.targetGalas?.length > 0 && (
                               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-ivory text-body whitespace-nowrap">
-                                {t("admin.dashboard.notices.table.galaPrefix", "Gala")} {item.targetGala}
+                                {t("admin.dashboard.notices.table.galaPrefix", "Gala")} {item.targetGalas.join(", ")}
+                              </span>
+                            )}
+                            {item.targetUsers?.length > 0 && (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-[#E5E3FB] text-[#4338CA] whitespace-nowrap">
+                                +{item.targetUsers.length} {t("admin.dashboard.notices.table.peopleSuffix", "people")}
                               </span>
                             )}
                           </div>
@@ -600,14 +583,19 @@ export default function AdminNoticesPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-1 mb-1.5">
                       <StatusPill status={item.targetAudience} />
-                      {item.targetBuilding != null && (
+                      {item.targetBuildings?.length > 0 && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-ivory text-body whitespace-nowrap">
-                          {t("admin.dashboard.notices.table.buildingPrefix", "Bldg")} {item.targetBuilding}
+                          {t("admin.dashboard.notices.table.buildingPrefix", "Bldg")} {item.targetBuildings.join(", ")}
                         </span>
                       )}
-                      {item.targetGala != null && (
+                      {item.targetGalas?.length > 0 && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-ivory text-body whitespace-nowrap">
-                          {t("admin.dashboard.notices.table.galaPrefix", "Gala")} {item.targetGala}
+                          {t("admin.dashboard.notices.table.galaPrefix", "Gala")} {item.targetGalas.join(", ")}
+                        </span>
+                      )}
+                      {item.targetUsers?.length > 0 && (
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold bg-[#E5E3FB] text-[#4338CA] whitespace-nowrap">
+                          +{item.targetUsers.length} {t("admin.dashboard.notices.table.peopleSuffix", "people")}
                         </span>
                       )}
                     </div>
