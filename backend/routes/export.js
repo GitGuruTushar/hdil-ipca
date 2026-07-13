@@ -45,7 +45,7 @@ router.get(
   authorize('admin'),
   asyncHandler(async (req, res) => {
     const feedback = await Feedback.find()
-      .populate('member', 'username fullName email')
+      .populate('member', 'username fullName email profilePicture')
       .lean();
 
     sendCsv(res, 'feedback.csv', feedback, [

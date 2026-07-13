@@ -8,6 +8,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const cloudinary = require('../utils/cloudinary');
 const { upload, enforceSizeLimits, IMAGE_TYPES } = require('../config/upload');
+const { parseLocalizedField } = require('../utils/localizedField');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -89,7 +90,10 @@ router.get(
 );
 
 const albumFields = [
-  check('title', 'Title is required').not().isEmpty(),
+  check('title').custom((value) => {
+    if (!parseLocalizedField(value).en.trim()) throw new Error('Title (English) is required');
+    return true;
+  }),
   check('eventDate', 'A valid event date is required').isISO8601(),
   check('category', 'Category can not be more than 50 characters').optional().isLength({ max: 50 })
 ];
@@ -105,13 +109,16 @@ router.post(
   albumFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
-    const { title, eventDate, category, keywords } = req.body;
+    const { eventDate, category, keywords } = req.body;
+    const title = parseLocalizedField(req.body.title);
+    const description = parseLocalizedField(req.body.description);
     const parsedKeywords = parseKeywords(keywords);
 
     const items = req.files && req.files.length ? await uploadMediaToCloudinary(req.files) : [];
 
     const album = await Album.create({
       title,
+      description,
       eventDate,
       category,
       keywords: parsedKeywords,
@@ -124,7 +131,7 @@ router.post(
 );
 
 // @route   PUT /api/gallery/:id
-// @desc    Update an album's title/eventDate/category, edit item captions, and/or append more media
+// @desc    Update an album's title/description/eventDate/category, edit item captions, and/or append more media
 // @access  Private (Admin only)
 router.put(
   '/:id',
@@ -135,8 +142,9 @@ router.put(
     const album = await Album.findById(req.params.id);
     if (!album) throw new AppError('Album not found', 404);
 
-    const { title, eventDate, category, captions, keywords } = req.body;
-    if (title !== undefined) album.title = title;
+    const { eventDate, category, captions, keywords } = req.body;
+    if (req.body.title !== undefined) album.title = parseLocalizedField(req.body.title);
+    if (req.body.description !== undefined) album.description = parseLocalizedField(req.body.description);
     if (eventDate !== undefined) album.eventDate = eventDate;
     if (category !== undefined) album.category = category;
     if (keywords !== undefined) album.keywords = parseKeywords(keywords);
@@ -153,7 +161,7 @@ router.put(
       Object.keys(captionMap).forEach((key) => {
         const index = Number(key);
         if (Number.isInteger(index) && album.items[index]) {
-          album.items[index].caption = captionMap[key];
+          album.items[index].caption = parseLocalizedField(captionMap[key]);
         }
       });
     }

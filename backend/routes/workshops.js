@@ -41,7 +41,7 @@ router.get(
       .sort({ date: 1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate('createdBy', 'username fullName');
+      .populate('createdBy', 'username fullName profilePicture');
 
     res.json({ workshops, page, totalPages, total });
   })
@@ -172,7 +172,7 @@ router.get(
 
     res.json({
       checkinCode: workshop.checkinCode,
-      checkinUrl: `${process.env.FRONTEND_URL}/checkin/${workshop.id}/${workshop.checkinCode}`
+      checkinUrl: `${process.env.FRONTEND_URL}/checkin?workshopId=${workshop.id}&code=${workshop.checkinCode}`
     });
   })
 );
@@ -236,7 +236,7 @@ router.post(
   protect,
   authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
-    const workshop = await Workshop.findById(req.params.id).populate('registeredUsers', 'email fullName');
+    const workshop = await Workshop.findById(req.params.id).populate('registeredUsers', 'email fullName profilePicture');
     if (!workshop) throw new AppError('Workshop not found', 404);
 
     await sendReminderForWorkshop(workshop);
@@ -255,8 +255,8 @@ router.get(
   authorize('admin', 'moderator'),
   asyncHandler(async (req, res) => {
     const workshop = await Workshop.findById(req.params.id)
-      .populate('registeredUsers', 'username fullName email')
-      .populate('checkedInUsers', 'username fullName email');
+      .populate('registeredUsers', 'username fullName email profilePicture')
+      .populate('checkedInUsers', 'username fullName email profilePicture');
     if (!workshop) throw new AppError('Workshop not found', 404);
 
     res.json(workshop);

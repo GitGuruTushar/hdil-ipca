@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
+const fs = require('fs');
 const Notice = require('../models/Notice');
 const Industry = require('../models/Industry');
 const { protect, authorize } = require('../middleware/auth');
@@ -8,6 +9,31 @@ const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const sanitizeRichText = require('../utils/sanitizeRichText');
 const logAudit = require('../utils/auditLog');
+const cloudinary = require('../utils/cloudinary');
+const { mixedMediaUpload, classifyFile, enforceMixedSizeLimits } = require('../config/mixedMediaUpload');
+
+const MAX_NOTICE_ATTACHMENTS = 10;
+
+const uploadNoticeAttachments = async (files) => {
+  enforceMixedSizeLimits(files);
+  const attachments = await Promise.all(
+    files.map(async (file) => {
+      const kind = classifyFile(file);
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: 'notices',
+        resource_type: kind === 'document' ? 'raw' : kind
+      });
+      return {
+        url: result.secure_url,
+        type: kind,
+        fileName: kind === 'document' ? file.originalname : undefined,
+        mimeType: file.mimetype
+      };
+    })
+  );
+  files.forEach((file) => { try { fs.unlinkSync(file.path); } catch (err) { /* already gone */ } });
+  return attachments;
+};
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -36,7 +62,7 @@ router.get(
     if (req.user.role === 'admin') {
       const notices = await Notice.find()
         .sort({ createdAt: -1 })
-        .populate('createdBy', 'username fullName');
+        .populate('createdBy', 'username fullName profilePicture');
       return res.json(notices);
     }
 
@@ -55,7 +81,7 @@ router.get(
       ]
     })
       .sort({ createdAt: -1 })
-      .populate('createdBy', 'username fullName');
+      .populate('createdBy', 'username fullName profilePicture');
 
     const visible = notices.filter((notice) => {
       if (!audienceMatches(notice, occupancyTypes)) return false;
@@ -86,7 +112,7 @@ router.get(
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate('createdBy', 'username fullName');
+      .populate('createdBy', 'username fullName profilePicture');
 
     res.json({ notices, page, totalPages, total });
   })
@@ -107,10 +133,14 @@ router.post(
   '/',
   protect,
   authorize('admin', 'moderator'),
+  mixedMediaUpload.array('files', MAX_NOTICE_ATTACHMENTS),
   noticeFields,
   asyncHandler(async (req, res) => {
     runValidation(req);
     const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt } = req.body;
+
+    const files = req.files || [];
+    const attachments = files.length ? await uploadNoticeAttachments(files) : [];
 
     const notice = await Notice.create({
       title,
@@ -121,6 +151,7 @@ router.post(
       targetGala,
       status,
       publishAt,
+      attachments,
       createdBy: req.user.id
     });
 
@@ -134,11 +165,12 @@ router.put(
   '/:id',
   protect,
   authorize('admin', 'moderator'),
+  mixedMediaUpload.array('files', MAX_NOTICE_ATTACHMENTS),
   asyncHandler(async (req, res) => {
     const notice = await Notice.findById(req.params.id);
     if (!notice) throw new AppError('Notice not found', 404);
 
-    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt } = req.body;
+    const { title, content, expiresAt, targetAudience, targetBuilding, targetGala, status, publishAt, existingAttachments } = req.body;
     if (title !== undefined) notice.title = title;
     if (content !== undefined) notice.content = sanitizeRichText(content);
     if (expiresAt !== undefined) notice.expiresAt = expiresAt;
@@ -147,6 +179,20 @@ router.put(
     if (targetGala !== undefined) notice.targetGala = targetGala;
     if (status !== undefined) notice.status = status;
     if (publishAt !== undefined) notice.publishAt = publishAt;
+
+    if (existingAttachments !== undefined) {
+      const keepUrls = JSON.parse(existingAttachments);
+      notice.attachments = notice.attachments.filter((a) => keepUrls.includes(a.url));
+    }
+
+    const files = req.files || [];
+    if (files.length) {
+      const uploaded = await uploadNoticeAttachments(files);
+      notice.attachments = [...notice.attachments, ...uploaded];
+    }
+    if (notice.attachments.length > MAX_NOTICE_ATTACHMENTS) {
+      throw new AppError(`Up to ${MAX_NOTICE_ATTACHMENTS} attachments allowed per notice.`, 400);
+    }
 
     await notice.save();
     res.json(notice);

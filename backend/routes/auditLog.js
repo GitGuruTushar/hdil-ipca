@@ -26,7 +26,7 @@ router.get(
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate('actor', 'username fullName');
+      .populate('actor', 'username fullName profilePicture');
 
     res.json({ entries, page, totalPages, total });
   })

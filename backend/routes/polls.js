@@ -20,7 +20,7 @@ router.get(
   '/',
   protect,
   asyncHandler(async (req, res) => {
-    const polls = await Poll.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName');
+    const polls = await Poll.find().sort({ createdAt: -1 }).populate('createdBy', 'username fullName profilePicture');
     res.json(polls);
   })
 );

@@ -52,4 +52,4 @@ function enforceSizeLimits(files) {
   }
 }
 
-module.exports = { upload, enforceSizeLimits, IMAGE_TYPES, VIDEO_TYPES };
+module.exports = { upload, enforceSizeLimits, IMAGE_TYPES, VIDEO_TYPES, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES };

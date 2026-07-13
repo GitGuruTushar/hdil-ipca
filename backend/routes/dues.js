@@ -32,7 +32,7 @@ router.get(
     const totalPages = Math.max(Math.ceil(total / limit), 1);
 
     const dues = await DuesRecord.find(filter)
-      .populate('member', 'username fullName')
+      .populate('member', 'username fullName profilePicture')
       .populate('industry', 'name')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)

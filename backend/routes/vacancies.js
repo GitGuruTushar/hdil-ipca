@@ -66,7 +66,7 @@ router.get(
       .skip((page - 1) * limit)
       .limit(limit)
       .populate('industry', 'name')
-      .populate('postedBy', 'username fullName');
+      .populate('postedBy', 'username fullName profilePicture');
 
     res.json({ vacancies, page, totalPages, total });
   })
@@ -79,7 +79,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const vacancy = await Vacancy.findById(req.params.id)
       .populate('industry', 'name')
-      .populate('postedBy', 'username fullName');
+      .populate('postedBy', 'username fullName profilePicture');
     if (!vacancy) throw new AppError('Vacancy not found', 404);
     res.json(vacancy);
   })

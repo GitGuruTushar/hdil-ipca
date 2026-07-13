@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const { createLogger, transports, format } = require('winston');
+const { Server } = require('socket.io');
 
 require('./utils/cloudinary'); // configures the Cloudinary SDK as a side effect
 
@@ -44,18 +45,18 @@ if (missingEnvVars.length > 0) {
 }
 
 // --- CORS: allow only known frontend origins (comma-separated in FRONTEND_URL) plus localhost dev ---
+// Shared by both the Express `cors()` middleware (for /api/*) and the Socket.io
+// server below (whose transport isn't covered by the Express middleware) so
+// the two allow-lists can never drift apart.
 const allowedOrigins = [
   ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()) : []),
   'http://localhost:3000'
 ];
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error('Not allowed by CORS'));
-    }
-  })
-);
+function corsOriginCheck(origin, callback) {
+  if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+  callback(new Error('Not allowed by CORS'));
+}
+app.use(cors({ origin: corsOriginCheck }));
 
 app.use(express.json({ limit: '20kb' }));
 app.use(helmet());
@@ -66,9 +67,16 @@ app.use(mongoSanitize());
 // — xss-clean stripped legitimate formatting tags with no way to exempt fields.
 
 // --- Rate limiting ---
+// Limits are per IP. In development every request (every tab, every polling
+// endpoint like messages/notifications) comes from the same localhost IP, so
+// the production-strength limit was exhausted within minutes of normal use.
+// Keep the strict limits in production; open them up well past any real dev
+// session's traffic otherwise.
+const isProd = process.env.NODE_ENV === 'production';
+
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: isProd ? 300 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { msg: 'Too many requests, please try again later.' }
@@ -77,7 +85,7 @@ app.use('/api', generalLimiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: isProd ? 10 : 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: { msg: 'Too many attempts, please try again later.' }
@@ -132,6 +140,8 @@ app.use('/api/gallery', require('./routes/gallery'));
 app.use('/api/feedback', require('./routes/feedback'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/site-content', require('./routes/siteContent'));
+app.use('/api/site-settings', require('./routes/siteSettings'));
+app.use('/api/translations', require('./routes/translations'));
 app.use('/api/documents', require('./routes/documents'));
 app.use('/api/grievances', require('./routes/grievances'));
 app.use('/api/dues', require('./routes/dues'));
@@ -140,6 +150,8 @@ app.use('/api/push', require('./routes/push'));
 app.use('/api/audit-log', require('./routes/auditLog'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/search', require('./routes/search'));
+app.use('/api/conversations', require('./routes/conversations'));
+app.use('/api/nicknames', require('./routes/nicknames'));
 
 // 404 for unknown API routes
 app.use('/api', (req, res) => {
@@ -174,6 +186,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5001;
 const server = app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+
+const io = new Server(server, {
+  cors: { origin: corsOriginCheck, credentials: true }
+});
+app.set('io', io);
+require('./sockets')(io, logger);
 
 process.on('unhandledRejection', (err) => {
   logger.error('Unhandled Rejection: ' + err.message);

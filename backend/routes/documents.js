@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const fs = require('fs');
 const { check, validationResult } = require('express-validator');
 const Document = require('../models/Document');
@@ -8,6 +7,7 @@ const { protect, authorize } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
 const cloudinary = require('../utils/cloudinary');
+const { documentUpload } = require('../config/documentUpload');
 
 const runValidation = (req) => {
   const errors = validationResult(req);
@@ -15,29 +15,6 @@ const runValidation = (req) => {
     throw new AppError(errors.array().map((e) => e.msg).join(', '), 400);
   }
 };
-
-// Documents can be PDFs, Word docs, etc. — the shared config/upload instance only
-// allows image/video mimetypes via its fileFilter, so this route uses its own multer
-// instance instead of reusing that shared config, but still allowlists mimetypes and
-// caps size so it can't be used to stash arbitrary files.
-const DOCUMENT_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
-];
-
-const documentUpload = multer({
-  dest: 'uploads/',
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
-  fileFilter: (req, file, cb) => {
-    if (DOCUMENT_TYPES.includes(file.mimetype)) {
-      return cb(null, true);
-    }
-    cb(new AppError('Unsupported file type. Allowed: PDF, Word, Excel.', 400), false);
-  }
-});
 
 // @route   GET /api/documents
 // @desc    List all documents (optional ?category= filter), paginated
@@ -57,7 +34,7 @@ router.get(
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
-        .populate('uploadedBy', 'username fullName'),
+        .populate('uploadedBy', 'username fullName profilePicture'),
       Document.countDocuments(filter)
     ]);
 

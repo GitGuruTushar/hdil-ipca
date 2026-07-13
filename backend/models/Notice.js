@@ -39,7 +39,13 @@ const NoticeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  }
+  },
+  attachments: [{
+    url: { type: String, required: true },
+    type: { type: String, enum: ['image', 'video', 'document'], required: true },
+    fileName: String,
+    mimeType: String
+  }]
 }, { timestamps: true });
 
 NoticeSchema.index({ status: 1, expiresAt: 1 });

@@ -1,24 +1,14 @@
 const mongoose = require('mongoose');
+const { localizedFieldSchema } = require('../utils/localizedField');
 
 const IndustrySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Please add a business name'],
-    unique: true,
-    trim: true,
-    maxlength: [50, 'Name can not be more than 50 characters']
-  },
-  businessType: {
-    type: String,
-    required: [true, 'Please add a business type'],
-    trim: true,
-    maxlength: [100, 'Business type can not be more than 100 characters']
-  },
-  description: {
-    type: String,
-    required: [true, 'Please add a description'],
-    maxlength: [500, 'Description can not be more than 500 characters']
-  },
+  name: localizedFieldSchema({ required: [true, 'Please add a business name'], maxlength: [50, 'Name can not be more than 50 characters'] }),
+  businessType: localizedFieldSchema({ required: [true, 'Please add a business type'], maxlength: [100, 'Business type can not be more than 100 characters'] }),
+  description: localizedFieldSchema({ required: [true, 'Please add a description'], maxlength: [500, 'Description can not be more than 500 characters'] }),
+  // A genuinely separate long-form field shown only on the full business page —
+  // `description` stays the short teaser reused in the compact card/quick-view
+  // popup, which would look broken with a 3000-char wall of text.
+  aboutUs: localizedFieldSchema({ maxlength: [3000, 'About us can not be more than 3000 characters'] }),
   galaNumber: {
     type: Number,
     required: [true, 'Please add a gala number']
@@ -33,11 +23,8 @@ const IndustrySchema = new mongoose.Schema({
     required: [true, 'Please specify owner or tenant']
   },
   products: [{
-    name: {
-      type: String,
-      required: true
-    },
-    description: String,
+    name: localizedFieldSchema({ required: true }),
+    description: localizedFieldSchema(),
     price: {
       type: Number,
       required: true
@@ -47,6 +34,22 @@ const IndustrySchema = new mongoose.Schema({
     }]
   }],
   materials: [String],
+  // "HH:mm" strings, single local timezone assumed (no cross-timezone complexity needed here).
+  businessHours: {
+    mon: { open: String, close: String, closed: { type: Boolean, default: false } },
+    tue: { open: String, close: String, closed: { type: Boolean, default: false } },
+    wed: { open: String, close: String, closed: { type: Boolean, default: false } },
+    thu: { open: String, close: String, closed: { type: Boolean, default: false } },
+    fri: { open: String, close: String, closed: { type: Boolean, default: false } },
+    sat: { open: String, close: String, closed: { type: Boolean, default: false } },
+    sun: { open: String, close: String, closed: { type: Boolean, default: false } }
+  },
+  socialLinks: {
+    website: String,
+    facebook: String,
+    instagram: String,
+    whatsapp: String
+  },
   keywords: {
     type: [String],
     default: []
@@ -83,5 +86,6 @@ const IndustrySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 IndustrySchema.index({ owner: 1 });
+IndustrySchema.index({ 'name.en': 1 }, { unique: true });
 
 module.exports = mongoose.model('Industry', IndustrySchema);
