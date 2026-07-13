@@ -8,16 +8,11 @@ import StatusPill from "@/components/app/status-pill";
 import { useToast } from "@/hooks/use-toast";
 import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
 import { useI18n } from "@/i18n/I18nProvider";
+import { DOCUMENT_CATEGORY_OPTIONS } from "@/constants/documentCategories";
 
 const LIMIT = 10;
 
-const CATEGORY_OPTIONS = [
-  { value: "bylaws", labelKey: "bylaws", label: "Bylaws" },
-  { value: "minutes", labelKey: "minutes", label: "Minutes" },
-  { value: "circulars", labelKey: "circulars", label: "Circulars" },
-  { value: "other", labelKey: "other", label: "Other" },
-];
-const FILTER_OPTIONS = [{ value: "", labelKey: "all", label: "All" }, ...CATEGORY_OPTIONS];
+const FILTER_OPTIONS = [{ value: "", label: "All" }, ...DOCUMENT_CATEGORY_OPTIONS];
 
 function PillSelect({ options, value, onChange }) {
   const { t } = useI18n();
@@ -34,7 +29,7 @@ function PillSelect({ options, value, onChange }) {
               : "h-8 px-3.5 rounded-full text-[12.5px] font-bold text-ink border border-line bg-white"
           }
         >
-          {t(`member.misc.documents.category.${opt.labelKey}`, opt.label)}
+          {t(`member.misc.documents.category.${opt.value || "all"}`, opt.label)}
         </button>
       ))}
     </div>
@@ -161,7 +156,7 @@ export default function MemberDocumentsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <StatusPill status={doc.category} />
+                        <StatusPill status={doc.category} label={doc.category === "other" ? doc.otherCategoryLabel : undefined} />
                       </td>
                       <td className="py-3 px-4 text-[12.5px] text-body whitespace-nowrap">
                         {formatDate(doc.createdAt)}
@@ -190,7 +185,7 @@ export default function MemberDocumentsPage() {
                 <div key={doc._id} className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="font-semibold text-ink text-[13.5px] line-clamp-2 flex-1">{doc.title}</div>
-                    <StatusPill status={doc.category} className="flex-none" />
+                    <StatusPill status={doc.category} label={doc.category === "other" ? doc.otherCategoryLabel : undefined} className="flex-none" />
                   </div>
                   {doc.description && (
                     <div className="text-[11.5px] text-body line-clamp-2 mb-1.5">{doc.description}</div>

@@ -16,6 +16,12 @@ const DocumentSchema = new mongoose.Schema({
     enum: ['bylaws', 'minutes', 'circulars', 'other'],
     default: 'other'
   },
+  otherCategoryLabel: {
+    type: String,
+    trim: true,
+    maxlength: 100,
+    required: [function () { return this.category === 'other'; }, 'A label is required when category is Other']
+  },
   fileUrl: {
     type: String,
     required: [true, 'File URL is required']
@@ -24,7 +30,24 @@ const DocumentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  }
+  },
+  targetAudience: {
+    type: String,
+    enum: ['everyone', 'owners', 'tenants'],
+    default: 'everyone'
+  },
+  targetBuildings: {
+    type: [Number],
+    default: []
+  },
+  targetGalas: {
+    type: [Number],
+    default: []
+  },
+  targetUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Document', DocumentSchema);

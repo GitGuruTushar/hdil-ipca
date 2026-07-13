@@ -1,30 +1,34 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Download, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import PageHeader from "@/components/app/page-header";
 import EmptyState from "@/components/app/empty-state";
 import Pagination from "@/components/app/pagination";
 import ConfirmDialog from "@/components/app/confirm-dialog";
 import StatusPill from "@/components/app/status-pill";
+import TargetingPicker from "@/components/app/targeting-picker";
 import { useToast } from "@/hooks/use-toast";
 import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useNicknames } from "@/hooks/use-nicknames";
 import { getDisplayName } from "@/utils/displayName";
+import { DOCUMENT_CATEGORY_OPTIONS } from "@/constants/documentCategories";
 
 const LIMIT = 10;
 
-const CATEGORY_OPTIONS = [
-  { value: "bylaws", label: "Bylaws" },
-  { value: "minutes", label: "Minutes" },
-  { value: "circulars", label: "Circulars" },
-  { value: "other", label: "Other" },
-];
+const FILTER_OPTIONS = [{ value: "", label: "All" }, ...DOCUMENT_CATEGORY_OPTIONS];
 
-const FILTER_OPTIONS = [{ value: "", label: "All" }, ...CATEGORY_OPTIONS];
-
-const EMPTY_FORM = { title: "", description: "", category: "other" };
+const EMPTY_FORM = {
+  title: "",
+  description: "",
+  category: "other",
+  otherCategoryLabel: "",
+  targetAudience: "everyone",
+  targetBuildings: [],
+  targetGalas: [],
+  targetUsers: [],
+};
 
 const inputCls =
   "w-full h-10 px-3 rounded-xl border border-line bg-white text-[13px] text-ink placeholder:text-body/50 outline-none focus:border-madder transition-colors";
@@ -73,7 +77,8 @@ export default function DocumentsPage() {
   const [total, setTotal] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState("");
 
-  const [uploadOpen, setUploadOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -115,17 +120,43 @@ export default function DocumentsPage() {
   const resetForm = () => {
     setForm(EMPTY_FORM);
     setFile(null);
+    setEditingId(null);
   };
 
-  const handleUpload = async (e) => {
+  const openCreate = () => {
+    resetForm();
+    setFormOpen(true);
+  };
+
+  const openEdit = (doc) => {
+    setEditingId(doc._id);
+    setForm({
+      title: doc.title || "",
+      description: doc.description || "",
+      category: doc.category || "other",
+      otherCategoryLabel: doc.otherCategoryLabel || "",
+      targetAudience: doc.targetAudience || "everyone",
+      targetBuildings: doc.targetBuildings || [],
+      targetGalas: doc.targetGalas || [],
+      targetUsers: doc.targetUsers || [],
+    });
+    setFile(null);
+    setFormOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (uploading) return;
     if (!form.title.trim()) {
       toast({ title: t("admin.media.documents.toast.titleRequired", "Title is required"), variant: "destructive" });
       return;
     }
-    if (!file) {
+    if (!editingId && !file) {
       toast({ title: t("admin.media.documents.toast.fileRequired", "A file is required"), variant: "destructive" });
+      return;
+    }
+    if (form.category === "other" && !form.otherCategoryLabel.trim()) {
+      toast({ title: t("admin.media.documents.toast.otherLabelRequired", "A label is required when category is Other"), variant: "destructive" });
       return;
     }
     setUploading(true);
@@ -134,16 +165,29 @@ export default function DocumentsPage() {
       fd.append("title", form.title.trim());
       if (form.description.trim()) fd.append("description", form.description.trim());
       fd.append("category", form.category);
-      fd.append("file", file);
-      await axiosInstance.post("/documents", fd);
-      toast({ title: t("admin.media.documents.toast.uploaded", "Document uploaded") });
-      setUploadOpen(false);
+      if (form.category === "other") fd.append("otherCategoryLabel", form.otherCategoryLabel.trim());
+      fd.append("targetAudience", form.targetAudience);
+      fd.append("targetBuildings", JSON.stringify(form.targetBuildings));
+      fd.append("targetGalas", JSON.stringify(form.targetGalas));
+      fd.append("targetUsers", JSON.stringify(form.targetUsers.map((u) => u._id)));
+      if (file) fd.append("file", file);
+
+      if (editingId) {
+        await axiosInstance.put(`/documents/${editingId}`, fd);
+        toast({ title: t("admin.media.documents.toast.saved", "Document saved") });
+      } else {
+        await axiosInstance.post("/documents", fd);
+        toast({ title: t("admin.media.documents.toast.uploaded", "Document uploaded") });
+      }
+      setFormOpen(false);
       resetForm();
       if (page === 1) fetchDocuments(1, categoryFilter);
       else setPage(1);
     } catch (err) {
       toast({
-        title: t("admin.media.documents.toast.uploadFailed", "Couldn't upload document"),
+        title: editingId
+          ? t("admin.media.documents.toast.saveFailed", "Couldn't save document")
+          : t("admin.media.documents.toast.uploadFailed", "Couldn't upload document"),
         description: apiErrorMessage(err),
         variant: "destructive",
       });
@@ -183,7 +227,7 @@ export default function DocumentsPage() {
         action={
           <button
             type="button"
-            onClick={() => setUploadOpen(true)}
+            onClick={openCreate}
             className="h-9 px-4 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-madder to-grape inline-flex items-center gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -223,7 +267,7 @@ export default function DocumentsPage() {
             action={
               <button
                 type="button"
-                onClick={() => setUploadOpen(true)}
+                onClick={openCreate}
                 className="h-9 px-4 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-madder to-grape"
               >
                 {t("admin.media.documents.emptyState.uploadButton", "+ Upload document")}
@@ -265,7 +309,7 @@ export default function DocumentsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <StatusPill status={doc.category} />
+                        <StatusPill status={doc.category} label={doc.category === "other" ? doc.otherCategoryLabel : undefined} />
                       </td>
                       <td className="py-3 px-4 text-[12.5px] text-body whitespace-nowrap">
                         {doc.uploadedBy ? getDisplayName(doc.uploadedBy, nicknames) : "—"}
@@ -282,6 +326,14 @@ export default function DocumentsPage() {
                           >
                             <Download className="h-3.5 w-3.5 text-body" />
                           </a>
+                          <button
+                            type="button"
+                            onClick={() => openEdit(doc)}
+                            aria-label={t("admin.media.documents.editAriaLabel", "Edit")}
+                            className="h-8 w-8 rounded-lg border border-line bg-white flex items-center justify-center"
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-body" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => setDeleteTarget(doc)}
@@ -303,7 +355,7 @@ export default function DocumentsPage() {
                 <div key={doc._id} className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="font-semibold text-ink text-[13.5px] line-clamp-2 flex-1">{doc.title}</div>
-                    <StatusPill status={doc.category} className="flex-none" />
+                    <StatusPill status={doc.category} label={doc.category === "other" ? doc.otherCategoryLabel : undefined} className="flex-none" />
                   </div>
                   {doc.description && (
                     <div className="text-[11.5px] text-body line-clamp-2 mb-1.5">{doc.description}</div>
@@ -320,6 +372,13 @@ export default function DocumentsPage() {
                     >
                       <Download className="h-3 w-3" /> {t("admin.media.documents.downloadButton", "Download")}
                     </a>
+                    <button
+                      type="button"
+                      onClick={() => openEdit(doc)}
+                      className="flex-1 h-8 rounded-lg border border-line bg-white text-[12px] font-semibold text-ink inline-flex items-center justify-center gap-1"
+                    >
+                      <Pencil className="h-3 w-3" /> {t("admin.media.documents.editButton", "Edit")}
+                    </button>
                     <button
                       type="button"
                       onClick={() => setDeleteTarget(doc)}
@@ -339,28 +398,29 @@ export default function DocumentsPage() {
         )}
       </div>
 
-      {/* Upload document dialog */}
+      {/* Upload/edit document dialog */}
       <Dialog
-        open={uploadOpen}
+        open={formOpen}
         onOpenChange={(v) => {
           if (uploading) return;
-          setUploadOpen(v);
+          setFormOpen(v);
           if (!v) resetForm();
         }}
       >
         <DialogContent className="bg-white border-line rounded-2xl max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display text-ink">
-              {t("admin.media.documents.form.dialogTitle", "Upload document")}
+              {editingId
+                ? t("admin.media.documents.form.editDialogTitle", "Edit document")
+                : t("admin.media.documents.form.dialogTitle", "Upload document")}
             </DialogTitle>
             <DialogDescription className="text-body">
-              {t(
-                "admin.media.documents.form.dialogDescription",
-                "PDF, Word, or Excel files up to 20MB, shared with members."
-              )}
+              {editingId
+                ? t("admin.media.documents.form.editDialogDescription", "Update this document's details, targeting, or replace the file.")
+                : t("admin.media.documents.form.dialogDescription", "PDF, Word, or Excel files up to 20MB, shared with members.")}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleUpload} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className={labelCls}>{t("admin.media.documents.form.titleLabel", "Title")}</label>
               <input
@@ -393,17 +453,32 @@ export default function DocumentsPage() {
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                 className={inputCls}
               >
-                {CATEGORY_OPTIONS.map((opt) => (
+                {DOCUMENT_CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {t(`admin.media.documents.category.${opt.value}`, opt.label)}
                   </option>
                 ))}
               </select>
             </div>
+            {form.category === "other" && (
+              <div>
+                <label className={labelCls}>{t("admin.media.documents.form.otherLabelLabel", "Label for \"Other\"")}</label>
+                <input
+                  required
+                  maxLength={100}
+                  value={form.otherCategoryLabel}
+                  onChange={(e) => setForm((f) => ({ ...f, otherCategoryLabel: e.target.value }))}
+                  placeholder={t("admin.media.documents.form.otherLabelPlaceholder", "e.g. AGM notes")}
+                  className={inputCls}
+                />
+              </div>
+            )}
             <div>
-              <label className={labelCls}>{t("admin.media.documents.form.fileLabel", "File")}</label>
+              <label className={labelCls}>
+                {t("admin.media.documents.form.fileLabel", "File")} {editingId ? `(${t("admin.media.documents.form.fileOptionalHint", "optional — leave empty to keep the current file")})` : ""}
+              </label>
               <input
-                required
+                required={!editingId}
                 type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -411,10 +486,22 @@ export default function DocumentsPage() {
               />
               {file && <p className="text-[11px] text-body mt-1 truncate">{file.name}</p>}
             </div>
+            <div>
+              <label className={labelCls}>{t("admin.media.documents.form.targetingLabel", "Targeting")}</label>
+              <TargetingPicker
+                value={{
+                  targetAudience: form.targetAudience,
+                  targetBuildings: form.targetBuildings,
+                  targetGalas: form.targetGalas,
+                  targetUsers: form.targetUsers,
+                }}
+                onChange={(next) => setForm((f) => ({ ...f, ...next }))}
+              />
+            </div>
             <DialogFooter>
               <button
                 type="button"
-                onClick={() => setUploadOpen(false)}
+                onClick={() => setFormOpen(false)}
                 disabled={uploading}
                 className="h-9 px-4 rounded-full border border-line bg-white text-[13px] font-bold text-ink disabled:opacity-60"
               >
@@ -426,7 +513,9 @@ export default function DocumentsPage() {
                 className="h-9 px-4 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-madder to-grape disabled:opacity-60"
               >
                 {uploading
-                  ? t("admin.media.documents.form.uploadingButton", "Uploading…")
+                  ? t("admin.media.documents.form.savingButton", "Saving…")
+                  : editingId
+                  ? t("admin.media.documents.form.saveChangesButton", "Save changes")
                   : t("admin.media.documents.form.submitButton", "Upload document")}
               </button>
             </DialogFooter>
