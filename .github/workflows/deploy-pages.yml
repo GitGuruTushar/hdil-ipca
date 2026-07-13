@@ -27,6 +27,12 @@ jobs:
       - run: npm run build
         env:
           GITHUB_PAGES: "true"
+          # Set these as repository variables (Settings → Secrets and variables →
+          # Actions → Variables) once the backend is deployed — e.g. to a Render
+          # Web Service. Without them the deployed static site has no way to
+          # reach a real backend at all (falls back to localhost:5001).
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SOCKET_URL: ${{ vars.NEXT_PUBLIC_SOCKET_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

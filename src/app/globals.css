@@ -251,3 +251,74 @@ html {
     scroll-behavior: auto !important;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* App shell (admin + member dashboard) — same Glass Serenity system,  */
+/* light mode only, no dark variant by design.                         */
+/* ------------------------------------------------------------------ */
+:root {
+  --status-live-bg: #dcfce7;
+  --status-live-text: #166534;
+  --status-pending-bg: #eef2f7;
+  --status-pending-text: #525a6b;
+  --status-ready-bg: #e5e3fb;
+  --status-ready-text: #4338ca;
+  --status-amber-bg: #fef3c7;
+  --status-amber-text: #92400e;
+}
+
+/* Sidebar / app shell surface — slightly lighter glass than site cards
+   so dense UI (tables, forms) doesn't fight the blur for legibility. */
+.app-glass {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+@media (min-width: 768px) {
+  .app-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+.rich-content {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--site-body);
+}
+.rich-content p {
+  margin: 0 0 0.75em;
+}
+.rich-content ul,
+.rich-content ol {
+  margin: 0 0 0.75em 1.25em;
+}
+.rich-content a {
+  color: var(--site-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rich-content h2,
+.rich-content h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 700;
+  color: var(--site-ink);
+  margin: 1em 0 0.4em;
+}
+.rich-content blockquote {
+  border-left: 3px solid var(--site-line);
+  padding-left: 0.9em;
+  color: var(--site-body);
+  font-style: italic;
+}
+.ProseMirror {
+  outline: none;
+  min-height: 7rem;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #8991a3;
+  pointer-events: none;
+  height: 0;
+}
