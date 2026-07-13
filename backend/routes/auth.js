@@ -445,6 +445,15 @@ router.get(
       filter.$or = [{ fullName: re }, { username: re }];
     }
 
+    // Querying "who signed up under building/gala X" via personal signup data is a
+    // new capability, not a narrowing of the base route — gated to admin/moderator
+    // (used by TargetingPicker's people-picker), unlike the base route above which
+    // stays open to any role for chat's existing use.
+    if (req.user.role === 'admin' || req.user.role === 'moderator') {
+      if (req.query.buildingNumber) filter.buildingNumber = Number(req.query.buildingNumber);
+      if (req.query.galaNumber) filter.galaNumber = Number(req.query.galaNumber);
+    }
+
     const total = await User.countDocuments(filter);
     const totalPages = Math.max(Math.ceil(total / limit), 1);
 
@@ -455,6 +464,28 @@ router.get(
       .limit(limit);
 
     res.json({ users, page, totalPages, total });
+  })
+);
+
+// @route   GET /api/auth/directory/galas
+// @desc    Distinct gala numbers within a building — the "enter building 7 → see
+//          the galas that exist in it" step of TargetingPicker's people-picker.
+// @access  Private (Admin/Moderator only)
+router.get(
+  '/directory/galas',
+  protect,
+  authorize('admin', 'moderator'),
+  asyncHandler(async (req, res) => {
+    const buildingNumber = Number(req.query.buildingNumber);
+    if (!Number.isFinite(buildingNumber)) throw new AppError('buildingNumber is required', 400);
+
+    const galas = await User.distinct('galaNumber', {
+      status: 'approved',
+      buildingNumber,
+      galaNumber: { $ne: null }
+    });
+
+    res.json({ galas: galas.sort((a, b) => a - b) });
   })
 );
 

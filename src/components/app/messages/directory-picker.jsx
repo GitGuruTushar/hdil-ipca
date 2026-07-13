@@ -6,8 +6,10 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useNicknames } from "@/hooks/use-nicknames";
 import { getDisplayName } from "@/utils/displayName";
 
-// Search + multi-select, shared by the "new message" and "add participants" flows.
-export function DirectoryPicker({ excludeIds, selected, onToggle }) {
+// Search + multi-select, shared by the "new message"/"add participants" flows
+// (no buildingNumber/galaNumber passed) and TargetingPicker's people-picker
+// (both passed, to scope results to a chosen building/gala).
+export function DirectoryPicker({ excludeIds, selected, onToggle, buildingNumber, galaNumber, limit = 30 }) {
   const { nicknames } = useNicknames();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -17,13 +19,13 @@ export function DirectoryPicker({ excludeIds, selected, onToggle }) {
     setLoading(true);
     const handle = setTimeout(() => {
       axiosInstance
-        .get("/auth/directory", { params: { q: query.trim() || undefined, limit: 30 } })
+        .get("/auth/directory", { params: { q: query.trim() || undefined, limit, buildingNumber, galaNumber } })
         .then((res) => setResults(res.data.users || []))
         .catch(() => setResults([]))
         .finally(() => setLoading(false));
     }, 250);
     return () => clearTimeout(handle);
-  }, [query]);
+  }, [query, buildingNumber, galaNumber, limit]);
 
   const excludeSet = useMemo(() => new Set(excludeIds || []), [excludeIds]);
   const selectedSet = useMemo(() => new Set((selected || []).map((u) => u._id)), [selected]);

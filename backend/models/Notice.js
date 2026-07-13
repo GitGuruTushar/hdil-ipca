@@ -21,12 +21,18 @@ const NoticeSchema = new mongoose.Schema({
     enum: ['everyone', 'owners', 'tenants'],
     default: 'everyone'
   },
-  targetBuilding: {
-    type: Number
+  targetBuildings: {
+    type: [Number],
+    default: []
   },
-  targetGala: {
-    type: Number
+  targetGalas: {
+    type: [Number],
+    default: []
   },
+  targetUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   status: {
     type: String,
     enum: ['draft', 'scheduled', 'published'],
