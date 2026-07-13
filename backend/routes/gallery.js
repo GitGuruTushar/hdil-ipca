@@ -98,8 +98,24 @@ const albumFields = [
   check('category', 'Category can not be more than 50 characters').optional().isLength({ max: 50 })
 ];
 
+const MAX_ALBUM_ITEMS = 200;
+
+// Same index-keyed JSON shape PUT already accepts (e.g. {"0": {"en": "..."}}) —
+// applied to the freshly-uploaded items array before Album.create(), so
+// captions can be set at creation time instead of only one-at-a-time after.
+const parseCaptions = (raw) => {
+  if (raw === undefined) return undefined;
+  if (typeof raw !== 'string') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    throw new AppError('captions must be a valid JSON object mapping item index to caption', 400);
+  }
+};
+
 // @route   POST /api/gallery
-// @desc    Create a new album (up to 20 photos/videos)
+// @desc    Create a new album (up to 20 photos/videos), optionally with
+//          per-item captions keyed by upload order
 // @access  Private (Admin only)
 router.post(
   '/',
@@ -115,6 +131,16 @@ router.post(
     const parsedKeywords = parseKeywords(keywords);
 
     const items = req.files && req.files.length ? await uploadMediaToCloudinary(req.files) : [];
+
+    const captionMap = parseCaptions(req.body.captions);
+    if (captionMap) {
+      Object.keys(captionMap).forEach((key) => {
+        const index = Number(key);
+        if (Number.isInteger(index) && items[index]) {
+          items[index].caption = parseLocalizedField(captionMap[key]);
+        }
+      });
+    }
 
     const album = await Album.create({
       title,
@@ -149,26 +175,26 @@ router.put(
     if (category !== undefined) album.category = category;
     if (keywords !== undefined) album.keywords = parseKeywords(keywords);
 
-    if (captions !== undefined) {
-      let captionMap = captions;
-      if (typeof captionMap === 'string') {
-        try {
-          captionMap = JSON.parse(captionMap);
-        } catch (err) {
-          throw new AppError('captions must be a valid JSON object mapping item index to caption', 400);
-        }
+    // Files are appended BEFORE captions are applied — captions for newly-added
+    // items are keyed relative to the post-append array (existing.length + i,
+    // the same convention the frontend's "add photos" flow uses), so those
+    // indices don't exist yet if captions were applied first.
+    if (req.files && req.files.length) {
+      if (album.items.length + req.files.length > MAX_ALBUM_ITEMS) {
+        throw new AppError(`An album can have at most ${MAX_ALBUM_ITEMS} items (currently ${album.items.length}).`, 400);
       }
+      const newItems = await uploadMediaToCloudinary(req.files);
+      album.items.push(...newItems);
+    }
+
+    if (captions !== undefined) {
+      const captionMap = parseCaptions(captions);
       Object.keys(captionMap).forEach((key) => {
         const index = Number(key);
         if (Number.isInteger(index) && album.items[index]) {
           album.items[index].caption = parseLocalizedField(captionMap[key]);
         }
       });
-    }
-
-    if (req.files && req.files.length) {
-      const newItems = await uploadMediaToCloudinary(req.files);
-      album.items.push(...newItems);
     }
 
     await album.save();

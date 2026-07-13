@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Image as ImageIcon, Video, Trash2 } from "lucide-react";
+import { Image as ImageIcon, Video, Trash2, X, Pencil, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +45,40 @@ function AlbumThumb({ album }) {
       ) : (
         <ImageIcon className="h-7 w-7 text-body" strokeWidth={1.75} />
       )}
+    </div>
+  );
+}
+
+// Per-staged-file preview + caption input, shared by the create-album dialog
+// and the "Add photos" flow in the album detail dialog.
+function StagedMediaGrid({ items, onCaptionChange, onRemove, captionPlaceholder }) {
+  return (
+    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {items.map((m, i) => (
+        <div key={i} className="rounded-xl border border-line overflow-hidden bg-white">
+          <div className="aspect-square bg-ivory relative">
+            {m.file.type.startsWith("image/") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={URL.createObjectURL(m.file)} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <video src={URL.createObjectURL(m.file)} className="h-full w-full object-cover" />
+            )}
+            <button
+              type="button"
+              onClick={() => onRemove(i)}
+              className="absolute top-1 right-1 h-5 w-5 rounded-full bg-white border border-line flex items-center justify-center"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <input
+            value={m.caption}
+            onChange={(e) => onCaptionChange(i, e.target.value)}
+            placeholder={captionPlaceholder}
+            className="w-full text-[11px] px-2 py-1.5 border-t border-line outline-none focus:border-madder"
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -111,7 +145,7 @@ export default function GalleryPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState({ title: emptyLocalized(), description: emptyLocalized(), eventDate: "", category: "", keywords: [] });
   const [formLang, setFormLang] = useState("en");
-  const [mediaFiles, setMediaFiles] = useState([]);
+  const [mediaFiles, setMediaFiles] = useState([]); // {file, caption}[] — caption is English-only at creation
   const [creating, setCreating] = useState(false);
 
   const [selectedAlbum, setSelectedAlbum] = useState(null);
@@ -119,6 +153,13 @@ export default function GalleryPage() {
   const [savingItemId, setSavingItemId] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deletingItem, setDeletingItem] = useState(false);
+
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [detailForm, setDetailForm] = useState(null);
+  const [savingDetails, setSavingDetails] = useState(false);
+
+  const [newPhotos, setNewPhotos] = useState([]); // {file, caption}[] staged to append to an existing album
+  const [addingPhotos, setAddingPhotos] = useState(false);
 
   const [albumToDelete, setAlbumToDelete] = useState(null);
   const [deletingAlbum, setDeletingAlbum] = useState(false);
@@ -149,6 +190,17 @@ export default function GalleryPage() {
     setMediaFiles([]);
   };
 
+  const handleMediaSelected = (e) => {
+    const files = Array.from(e.target.files || []);
+    setMediaFiles(files.map((file) => ({ file, caption: "" })));
+  };
+  const updateStagedCaption = (index, caption) => {
+    setMediaFiles((prev) => prev.map((m, i) => (i === index ? { ...m, caption } : m)));
+  };
+  const removeStagedMedia = (index) => {
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!form.title.en.trim() || !form.eventDate) {
@@ -167,7 +219,12 @@ export default function GalleryPage() {
       fd.append("eventDate", form.eventDate);
       if (form.category.trim()) fd.append("category", form.category.trim());
       fd.append("keywords", JSON.stringify(form.keywords));
-      mediaFiles.forEach((file) => fd.append("media", file));
+      const captions = {};
+      mediaFiles.forEach((m, i) => {
+        if (m.caption.trim()) captions[i] = { en: m.caption.trim(), hi: "", mr: "" };
+      });
+      if (Object.keys(captions).length) fd.append("captions", JSON.stringify(captions));
+      mediaFiles.forEach((m) => fd.append("media", m.file));
       await axiosInstance.post("/gallery", fd);
       toast({ title: t("admin.media.gallery.toast.albumCreated", "Album created") });
       setCreateOpen(false);
@@ -177,6 +234,84 @@ export default function GalleryPage() {
       toast({ title: apiErrorMessage(err, t("admin.media.gallery.toast.createAlbumFailed", "Failed to create album")), variant: "destructive" });
     } finally {
       setCreating(false);
+    }
+  };
+
+  const openAlbumDetail = (album) => {
+    setSelectedAlbum(album);
+    setEditingDetails(false);
+    setDetailForm(null);
+    setNewPhotos([]);
+  };
+
+  const startEditDetails = () => {
+    setDetailForm({
+      title: selectedAlbum.title || emptyLocalized(),
+      description: selectedAlbum.description || emptyLocalized(),
+      eventDate: selectedAlbum.eventDate ? selectedAlbum.eventDate.slice(0, 10) : "",
+      category: selectedAlbum.category || "",
+      keywords: selectedAlbum.keywords || [],
+    });
+    setEditingDetails(true);
+  };
+
+  const saveDetails = async () => {
+    if (!detailForm.title.en.trim() || !detailForm.eventDate) {
+      toast({ title: t("admin.media.gallery.toast.titleDateRequired", "Title (English) and event date are required"), variant: "destructive" });
+      return;
+    }
+    setSavingDetails(true);
+    try {
+      const res = await axiosInstance.put(`/gallery/${selectedAlbum._id}`, {
+        title: detailForm.title,
+        description: detailForm.description,
+        eventDate: detailForm.eventDate,
+        category: detailForm.category.trim(),
+        keywords: detailForm.keywords,
+      });
+      setSelectedAlbum(res.data);
+      setAlbums((prev) => prev.map((a) => (a._id === res.data._id ? res.data : a)));
+      toast({ title: t("admin.media.gallery.toast.detailsSaved", "Album details saved") });
+      setEditingDetails(false);
+    } catch (err) {
+      toast({ title: apiErrorMessage(err, t("admin.media.gallery.toast.saveDetailsFailed", "Failed to save album details")), variant: "destructive" });
+    } finally {
+      setSavingDetails(false);
+    }
+  };
+
+  const handleNewPhotosSelected = (e) => {
+    const files = Array.from(e.target.files || []);
+    setNewPhotos(files.map((file) => ({ file, caption: "" })));
+  };
+  const updateNewPhotoCaption = (index, caption) => {
+    setNewPhotos((prev) => prev.map((m, i) => (i === index ? { ...m, caption } : m)));
+  };
+  const removeNewPhoto = (index) => {
+    setNewPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const submitNewPhotos = async () => {
+    if (!newPhotos.length || !selectedAlbum) return;
+    setAddingPhotos(true);
+    try {
+      const fd = new FormData();
+      const baseIndex = selectedAlbum.items.length;
+      const captions = {};
+      newPhotos.forEach((m, i) => {
+        if (m.caption.trim()) captions[baseIndex + i] = { en: m.caption.trim(), hi: "", mr: "" };
+      });
+      if (Object.keys(captions).length) fd.append("captions", JSON.stringify(captions));
+      newPhotos.forEach((m) => fd.append("media", m.file));
+      const res = await axiosInstance.put(`/gallery/${selectedAlbum._id}`, fd);
+      setSelectedAlbum(res.data);
+      setAlbums((prev) => prev.map((a) => (a._id === res.data._id ? res.data : a)));
+      toast({ title: t("admin.media.gallery.toast.photosAdded", "Photos added") });
+      setNewPhotos([]);
+    } catch (err) {
+      toast({ title: apiErrorMessage(err, t("admin.media.gallery.toast.addPhotosFailed", "Failed to add photos")), variant: "destructive" });
+    } finally {
+      setAddingPhotos(false);
     }
   };
 
@@ -288,7 +423,7 @@ export default function GalleryPage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {albums.map((album) => (
-              <AlbumCard key={album._id} album={album} onOpen={setSelectedAlbum} onDelete={setAlbumToDelete} />
+              <AlbumCard key={album._id} album={album} onOpen={openAlbumDetail} onDelete={setAlbumToDelete} />
             ))}
           </div>
           <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} />
@@ -369,13 +504,21 @@ export default function GalleryPage() {
                 type="file"
                 multiple
                 accept="image/*,video/*"
-                onChange={(e) => setMediaFiles(Array.from(e.target.files || []))}
+                onChange={handleMediaSelected}
                 className={fileInputCls}
               />
               <p className={`text-[11px] mt-1 ${mediaFiles.length > 20 ? "text-alarm font-semibold" : "text-body"}`}>
                 {mediaFiles.length} {t("admin.media.gallery.form.selectedLabel", "selected")}
                 {mediaFiles.length > 20 ? ` ${t("admin.media.gallery.form.maxFilesWarning", "— maximum 20 files")}` : ""}
               </p>
+              {mediaFiles.length > 0 && (
+                <StagedMediaGrid
+                  items={mediaFiles}
+                  onCaptionChange={updateStagedCaption}
+                  onRemove={removeStagedMedia}
+                  captionPlaceholder={t("admin.media.gallery.form.captionPlaceholder", "Caption (English)…")}
+                />
+              )}
             </div>
             <DialogFooter>
               <button
@@ -400,71 +543,201 @@ export default function GalleryPage() {
       </Dialog>
 
       {/* Album detail dialog */}
-      <Dialog open={!!selectedAlbum} onOpenChange={(v) => !v && setSelectedAlbum(null)}>
+      <Dialog
+        open={!!selectedAlbum}
+        onOpenChange={(v) => {
+          if (!v) {
+            setSelectedAlbum(null);
+            setEditingDetails(false);
+            setDetailForm(null);
+            setNewPhotos([]);
+          }
+        }}
+      >
         <DialogContent className="bg-white border-line rounded-2xl max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-display text-ink">{pickLang(selectedAlbum?.title, "en")}</DialogTitle>
-            <DialogDescription className="text-body">
-              {selectedAlbum ? fmtDate(selectedAlbum.eventDate) : ""}
-              {selectedAlbum?.category ? ` · ${selectedAlbum.category}` : ""}
-            </DialogDescription>
-          </DialogHeader>
+          {!editingDetails ? (
+            <>
+              <DialogHeader>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <DialogTitle className="font-display text-ink">{pickLang(selectedAlbum?.title, "en")}</DialogTitle>
+                    <DialogDescription className="text-body">
+                      {selectedAlbum ? fmtDate(selectedAlbum.eventDate) : ""}
+                      {selectedAlbum?.category ? ` · ${selectedAlbum.category}` : ""}
+                    </DialogDescription>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={startEditDetails}
+                    className="h-8 px-3 rounded-full border border-line bg-white text-[12px] font-semibold text-ink inline-flex items-center gap-1 flex-none"
+                  >
+                    <Pencil className="h-3 w-3" /> {t("admin.media.gallery.detail.editDetailsButton", "Edit details")}
+                  </button>
+                </div>
+              </DialogHeader>
 
-          <div className="flex items-center justify-between">
-            <label className="text-[11px] font-bold uppercase tracking-wide text-body/70">
-              {t("admin.media.gallery.detail.captionLanguageLabel", "Caption language")}
-            </label>
-            <ContentLanguageTabs lang={captionLang} onChange={setCaptionLang} />
-          </div>
+              {selectedAlbum?.keywords?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedAlbum.keywords.map((kw) => (
+                    <span key={kw} className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-[#E5E3FB] text-[#4338CA]">
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="font-display text-ink">{t("admin.media.gallery.detail.editDetailsHeading", "Edit album details")}</DialogTitle>
+              </DialogHeader>
+              <div className="flex items-center justify-between">
+                <label className={labelCls}>{t("shared.forms.contentLanguageLabel", "Content language")}</label>
+                <ContentLanguageTabs lang={captionLang} onChange={setCaptionLang} completenessValue={{ title: detailForm.title, description: detailForm.description }} />
+              </div>
+              <div>
+                <label className={labelCls}>{t("admin.media.gallery.form.titleLabel", "Title")}</label>
+                <LocalizedInput
+                  required={captionLang === "en"}
+                  value={detailForm.title}
+                  lang={captionLang}
+                  onChange={(title) => setDetailForm((f) => ({ ...f, title }))}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>{t("admin.media.gallery.form.descriptionLabel", "Description")}</label>
+                <LocalizedTextarea value={detailForm.description} lang={captionLang} onChange={(description) => setDetailForm((f) => ({ ...f, description }))} rows={2} />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>{t("admin.media.gallery.form.eventDateLabel", "Event date")}</label>
+                  <input
+                    required
+                    type="date"
+                    value={detailForm.eventDate}
+                    onChange={(e) => setDetailForm((f) => ({ ...f, eventDate: e.target.value }))}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>{t("admin.media.gallery.form.categoryLabel", "Category")}</label>
+                  <input
+                    value={detailForm.category}
+                    onChange={(e) => setDetailForm((f) => ({ ...f, category: e.target.value }))}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>{t("admin.media.gallery.form.keywordsLabel", "Keywords")}</label>
+                <ChipInput value={detailForm.keywords} onChange={(kw) => setDetailForm((f) => ({ ...f, keywords: kw }))} />
+              </div>
+              <DialogFooter>
+                <button
+                  type="button"
+                  onClick={() => setEditingDetails(false)}
+                  disabled={savingDetails}
+                  className="h-9 px-4 rounded-full border border-line bg-white text-[13px] font-bold text-ink disabled:opacity-60"
+                >
+                  {t("admin.media.gallery.form.cancelButton", "Cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={saveDetails}
+                  disabled={savingDetails}
+                  className="h-9 px-4 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-madder to-grape disabled:opacity-60"
+                >
+                  {savingDetails ? t("admin.media.gallery.form.savingButton", "Saving…") : t("admin.media.gallery.form.saveChangesButton", "Save changes")}
+                </button>
+              </DialogFooter>
+            </>
+          )}
 
-          {selectedAlbum?.keywords?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {selectedAlbum.keywords.map((kw) => (
-                <span key={kw} className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-[#E5E3FB] text-[#4338CA]">
-                  {kw}
-                </span>
-              ))}
+          {!editingDetails && (
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wide text-body/70">
+                {t("admin.media.gallery.detail.captionLanguageLabel", "Caption language")}
+              </label>
+              <ContentLanguageTabs lang={captionLang} onChange={setCaptionLang} />
             </div>
           )}
 
-          {selectedAlbum?.items?.length ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {selectedAlbum.items.map((item) => (
-                <div key={item._id} className="rounded-xl border border-line overflow-hidden bg-white">
-                  <div className="aspect-square bg-ivory">
-                    {item.type === "image" ? (
-                      <img src={item.url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <video src={item.url} controls className="h-full w-full object-cover" />
-                    )}
-                  </div>
-                  <div className="p-2 space-y-1.5">
-                    <input
-                      key={`${item._id}-${captionLang}`}
-                      defaultValue={item.caption?.[captionLang] || ""}
-                      placeholder={t("admin.media.gallery.detail.captionPlaceholder", "Add a caption…")}
-                      disabled={savingItemId === item._id}
-                      onBlur={(e) => saveCaption(item, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") e.target.blur();
-                      }}
-                      className="w-full text-[11.5px] px-2 py-1.5 rounded-lg border border-line bg-white outline-none focus:border-madder disabled:opacity-60"
+          {!editingDetails && (
+            <>
+              {selectedAlbum?.items?.length ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {selectedAlbum.items.map((item) => (
+                    <div key={item._id} className="rounded-xl border border-line overflow-hidden bg-white">
+                      <div className="aspect-square bg-ivory">
+                        {item.type === "image" ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={item.url} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <video src={item.url} controls className="h-full w-full object-cover" />
+                        )}
+                      </div>
+                      <div className="p-2 space-y-1.5">
+                        <input
+                          key={`${item._id}-${captionLang}`}
+                          defaultValue={item.caption?.[captionLang] || ""}
+                          placeholder={t("admin.media.gallery.detail.captionPlaceholder", "Add a caption…")}
+                          disabled={savingItemId === item._id}
+                          onBlur={(e) => saveCaption(item, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.target.blur();
+                          }}
+                          className="w-full text-[11.5px] px-2 py-1.5 rounded-lg border border-line bg-white outline-none focus:border-madder disabled:opacity-60"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setItemToDelete(item)}
+                          className="w-full h-7 rounded-lg text-[11px] font-semibold text-alarm border border-line bg-white flex items-center justify-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" /> {t("admin.media.gallery.detail.removeButton", "Remove")}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-body text-center py-6">
+                  {t("admin.media.gallery.detail.emptyItems", "No photos or videos in this album yet.")}
+                </p>
+              )}
+
+              <div className="border-t border-line pt-4">
+                <label className={labelCls}>{t("admin.media.gallery.detail.addPhotosLabel", "Add photos")}</label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleNewPhotosSelected}
+                  className={fileInputCls}
+                />
+                {newPhotos.length > 0 && (
+                  <>
+                    <StagedMediaGrid
+                      items={newPhotos}
+                      onCaptionChange={updateNewPhotoCaption}
+                      onRemove={removeNewPhoto}
+                      captionPlaceholder={t("admin.media.gallery.form.captionPlaceholder", "Caption (English)…")}
                     />
                     <button
                       type="button"
-                      onClick={() => setItemToDelete(item)}
-                      className="w-full h-7 rounded-lg text-[11px] font-semibold text-alarm border border-line bg-white flex items-center justify-center gap-1"
+                      onClick={submitNewPhotos}
+                      disabled={addingPhotos}
+                      className="mt-3 h-9 px-4 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-madder to-grape disabled:opacity-60 inline-flex items-center gap-1.5"
                     >
-                      <Trash2 className="h-3 w-3" /> {t("admin.media.gallery.detail.removeButton", "Remove")}
+                      <Plus className="h-3.5 w-3.5" />
+                      {addingPhotos
+                        ? t("admin.media.gallery.detail.addingPhotosButton", "Adding…")
+                        : t("admin.media.gallery.detail.addPhotosButton", `Add ${newPhotos.length} photo${newPhotos.length === 1 ? "" : "s"}`)}
                     </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-body text-center py-6">
-              {t("admin.media.gallery.detail.emptyItems", "No photos or videos in this album yet.")}
-            </p>
+                  </>
+                )}
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
