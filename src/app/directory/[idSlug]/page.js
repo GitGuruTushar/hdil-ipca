@@ -6,9 +6,15 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 // Enumerates the static shell only (id-slug values) — the page itself still
 // fetches full content client-side, same as the rest of this public site.
 // Wrapped in try/catch: a failed build-time fetch (e.g. Render's free tier
-// cold-starting mid-build) should mean "no pre-rendered detail pages this
-// deploy," not a failed GitHub Pages deploy — the ?id= fallback and
-// not-found.js redirect cover any listing missing from this list.
+// cold-starting mid-build) should mean "no real pre-rendered detail pages
+// this deploy," not a failed GitHub Pages deploy — the ?id= fallback and
+// not-found.js redirect cover any listing missing from this list. Next.js's
+// `output: 'export'` treats an EMPTY generateStaticParams() result as
+// equivalent to a MISSING one and hard-fails the whole build (confirmed by
+// a real CI failure, not just inferred) — so the failure path must return at
+// least one harmless placeholder param, never [].
+const PLACEHOLDER_PARAMS = [{ idSlug: "000000000000000000000000-placeholder" }];
+
 export async function generateStaticParams() {
   const idSlugs = [];
   let page = 1;
@@ -30,11 +36,11 @@ export async function generateStaticParams() {
       page += 1;
     } while (page <= totalPages);
   } catch (err) {
-    console.warn("[directory/[idSlug]] generateStaticParams failed — building without pre-rendered detail pages:", err.message);
-    return [];
+    console.warn("[directory/[idSlug]] generateStaticParams failed — building with a placeholder param only:", err.message);
+    return PLACEHOLDER_PARAMS;
   }
 
-  return idSlugs;
+  return idSlugs.length ? idSlugs : PLACEHOLDER_PARAMS;
 }
 
 export default async function BusinessDetailPage({ params }) {
