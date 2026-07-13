@@ -17,6 +17,23 @@ const runValidation = (req) => {
   }
 };
 
+// Strips the raw registeredUsers/checkedInUsers ObjectId arrays for non-admin
+// callers before they ever go on the wire. Those arrays, combined with
+// GET /api/auth/directory (which maps any id to a full name for any
+// authenticated role), let an ordinary member reconstruct exactly who
+// registered/checked in by name — a real deanonymization vector, not just a
+// UI nicety. Admins/moderators keep the full document unchanged.
+const shapeForCaller = (workshopDoc, user) => {
+  if (user.role === 'admin' || user.role === 'moderator') return workshopDoc;
+  const { registeredUsers, checkedInUsers, ...rest } = workshopDoc.toObject ? workshopDoc.toObject() : workshopDoc;
+  return {
+    ...rest,
+    registeredCount: registeredUsers.length,
+    isRegistered: registeredUsers.some((id) => id.toString() === user.id),
+    isCheckedIn: checkedInUsers.some((id) => id.toString() === user.id)
+  };
+};
+
 const workshopFields = [
   check('title', 'Title is required').not().isEmpty(),
   check('description', 'Description is required').not().isEmpty(),
@@ -43,7 +60,7 @@ router.get(
       .limit(limit)
       .populate('createdBy', 'username fullName profilePicture');
 
-    res.json({ workshops, page, totalPages, total });
+    res.json({ workshops: workshops.map((w) => shapeForCaller(w, req.user)), page, totalPages, total });
   })
 );
 
@@ -137,7 +154,7 @@ router.post(
       body: `You're confirmed for ${new Date(workshop.date).toLocaleString()} at ${workshop.location}.`
     }).catch(() => {}); // best-effort — don't fail the registration if the notification pipeline has an issue
 
-    res.json(workshop);
+    res.json(shapeForCaller(workshop, req.user));
   })
 );
 
@@ -153,7 +170,7 @@ router.post(
       { new: true }
     );
     if (!workshop) throw new AppError('Workshop not found', 404);
-    res.json(workshop);
+    res.json(shapeForCaller(workshop, req.user));
   })
 );
 
@@ -197,7 +214,7 @@ router.post(
       { new: true }
     );
 
-    res.json(updated);
+    res.json(shapeForCaller(updated, req.user));
   })
 );
 

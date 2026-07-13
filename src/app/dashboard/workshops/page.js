@@ -1,13 +1,24 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { CalendarDays, MapPin, Users } from "lucide-react";
+import { CalendarDays, MapPin, Users, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import PageHeader from "@/components/app/page-header";
 import EmptyState from "@/components/app/empty-state";
 import Pagination from "@/components/app/pagination";
 import axiosInstance, { apiErrorMessage } from "@/utils/axiosInstance";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/i18n/I18nProvider";
+
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "today", label: "Today" },
+  { value: "upcoming", label: "Upcoming" },
+  { value: "past", label: "Past" },
+  { value: "mine", label: "My registrations" },
+];
+
+const isSameLocalDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
 export default function MemberWorkshopsPage() {
   const { t } = useI18n();
@@ -18,19 +29,17 @@ export default function MemberWorkshopsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [filter, setFilter] = useState("all");
 
-  // We don't have the current member's id client-side, so registration state
-  // is tracked optimistically: unknown/absent means "not registered", and it
-  // flips to true either on a successful register call or on the specific
-  // "already registered" 400 the backend returns.
-  const [registered, setRegistered] = useState({});
   const [registering, setRegistering] = useState({});
   const [unregistering, setUnregistering] = useState({});
+
+  const [detailWorkshop, setDetailWorkshop] = useState(null);
 
   const fetchWorkshops = useCallback(() => {
     setLoading(true);
     return axiosInstance
-      .get("/workshops", { params: { page, limit: 50 } })
+      .get("/workshops", { params: { page, limit: 200 } })
       .then((res) => {
         setWorkshops(res.data.workshops || []);
         setTotalPages(res.data.totalPages || 1);
@@ -47,8 +56,8 @@ export default function MemberWorkshopsPage() {
     fetchWorkshops();
   }, [fetchWorkshops]);
 
-  // Upcoming (soonest first) ahead of past (most recent first) within the
-  // fetched page.
+  // Upcoming (soonest first) ahead of past (most recent first), then the
+  // selected filter narrows that combined list.
   const sorted = useMemo(() => {
     const now = Date.now();
     const upcoming = workshops
@@ -60,20 +69,29 @@ export default function MemberWorkshopsPage() {
     return [...upcoming, ...past];
   }, [workshops]);
 
+  const filtered = useMemo(() => {
+    if (filter === "all") return sorted;
+    const now = new Date();
+    if (filter === "today") return sorted.filter((w) => isSameLocalDay(new Date(w.date), now));
+    if (filter === "upcoming") return sorted.filter((w) => new Date(w.date).getTime() >= now.getTime());
+    if (filter === "past") return sorted.filter((w) => new Date(w.date).getTime() < now.getTime());
+    if (filter === "mine") return sorted.filter((w) => w.isRegistered);
+    return sorted;
+  }, [sorted, filter]);
+
   const handleRegister = (workshop) => {
-    if (registering[workshop._id] || registered[workshop._id]) return;
+    if (registering[workshop._id] || workshop.isRegistered) return;
     setRegistering((r) => ({ ...r, [workshop._id]: true }));
     axiosInstance
       .post(`/workshops/${workshop._id}/register`)
       .then((res) => {
         setWorkshops((prev) => prev.map((w) => (w._id === workshop._id ? res.data : w)));
-        setRegistered((r) => ({ ...r, [workshop._id]: true }));
         toast({ title: t("member.home.workshopsPage.toast.registered", "You're registered"), description: workshop.title });
       })
       .catch((err) => {
         const message = apiErrorMessage(err, t("member.home.workshopsPage.toast.registerError", "Couldn't register"));
         if (message.toLowerCase().includes("already registered")) {
-          setRegistered((r) => ({ ...r, [workshop._id]: true }));
+          setWorkshops((prev) => prev.map((w) => (w._id === workshop._id ? { ...w, isRegistered: true } : w)));
           toast({ title: t("member.home.workshopsPage.toast.alreadyRegistered", "You're already registered for this workshop") });
         } else {
           toast({ title: message, variant: "destructive" });
@@ -89,7 +107,6 @@ export default function MemberWorkshopsPage() {
       .post(`/workshops/${workshop._id}/unregister`)
       .then((res) => {
         setWorkshops((prev) => prev.map((w) => (w._id === workshop._id ? res.data : w)));
-        setRegistered((r) => ({ ...r, [workshop._id]: false }));
         toast({ title: t("member.home.workshopsPage.toast.cancelled", "Registration cancelled"), description: workshop.title });
       })
       .catch((err) =>
@@ -105,13 +122,30 @@ export default function MemberWorkshopsPage() {
         description={t("member.home.workshopsPage.description", "Register for workshops and keep track of what's coming up.")}
       />
 
+      <div className="mb-4 flex flex-wrap gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setFilter(f.value)}
+            className={
+              filter === f.value
+                ? "h-8 px-3.5 rounded-full text-[12.5px] font-bold text-white bg-gradient-to-r from-madder to-grape"
+                : "h-8 px-3.5 rounded-full text-[12.5px] font-bold text-ink border border-line bg-white"
+            }
+          >
+            {t(`member.home.workshopsPage.filters.${f.value}`, f.label)}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {[1, 2, 3].map((i) => (
             <WorkshopCardSkeleton key={i} />
           ))}
         </div>
-      ) : sorted.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="app-glass glass-shadow rounded-2xl">
           <EmptyState
             icon={CalendarDays}
@@ -122,12 +156,12 @@ export default function MemberWorkshopsPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {sorted.map((w) => {
-              const registeredCount = w.registeredUsers?.length || 0;
+            {filtered.map((w) => {
+              const registeredCount = w.registeredCount || 0;
               const capacity = w.capacity || 1;
               const pct = Math.min(100, Math.round((registeredCount / capacity) * 100));
               const isFull = registeredCount >= capacity;
-              const isRegistered = !!registered[w._id];
+              const isRegistered = !!w.isRegistered;
               const isPast = new Date(w.date).getTime() < Date.now();
               const busy = registering[w._id] || unregistering[w._id];
 
@@ -141,8 +175,28 @@ export default function MemberWorkshopsPage() {
               const buttonDisabled = busy || isPast || (!isRegistered && isFull);
 
               return (
-                <div key={w._id} className="app-glass glass-shadow rounded-2xl p-4 sm:p-5 flex flex-col">
-                  <h3 className="font-display font-bold text-ink text-[15px] break-words">{w.title}</h3>
+                <div
+                  key={w._id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setDetailWorkshop(w)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setDetailWorkshop(w);
+                    }
+                  }}
+                  className="app-glass glass-shadow rounded-2xl p-4 sm:p-5 flex flex-col cursor-pointer hover-lift"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-display font-bold text-ink text-[15px] break-words">{w.title}</h3>
+                    {w.isCheckedIn && (
+                      <span className="flex-none inline-flex items-center gap-1 rounded-full bg-ok/10 px-2 py-0.5 text-[10px] font-bold text-ok">
+                        <CheckCircle2 className="h-3 w-3" strokeWidth={2.5} />
+                        {t("member.home.workshopsPage.checkedInBadge", "Checked in")}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[12.5px] text-body mt-1.5 line-clamp-2">{w.description}</p>
 
                   <div className="mt-3 space-y-1.5">
@@ -180,7 +234,10 @@ export default function MemberWorkshopsPage() {
                     <button
                       type="button"
                       disabled={buttonDisabled}
-                      onClick={() => (isRegistered ? handleUnregister(w) : handleRegister(w))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        isRegistered ? handleUnregister(w) : handleRegister(w);
+                      }}
                       className={
                         isRegistered
                           ? "w-full h-9 rounded-full text-[13px] font-bold text-ink border border-line bg-white disabled:opacity-60"
@@ -198,6 +255,47 @@ export default function MemberWorkshopsPage() {
           <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} />
         </>
       )}
+
+      {/* View details dialog — count only, never other registrants' names (enforced server-side). */}
+      <Dialog open={!!detailWorkshop} onOpenChange={(v) => !v && setDetailWorkshop(null)}>
+        <DialogContent className="bg-white border-line rounded-2xl max-w-md max-h-[85vh] overflow-y-auto">
+          {detailWorkshop && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="font-display text-ink">{detailWorkshop.title}</DialogTitle>
+                <DialogDescription className="text-body whitespace-pre-line">{detailWorkshop.description}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-[13px] text-body">
+                  <CalendarDays className="h-4 w-4 flex-none" />
+                  {format(new Date(detailWorkshop.date), "EEEE, MMMM d, yyyy · h:mm a")}
+                </div>
+                <div className="flex items-center gap-1.5 text-[13px] text-body">
+                  <MapPin className="h-4 w-4 flex-none" />
+                  {detailWorkshop.location}
+                </div>
+                <div className="flex items-center gap-1.5 text-[13px] text-body">
+                  <Users className="h-4 w-4 flex-none" />
+                  {detailWorkshop.registeredCount || 0} / {detailWorkshop.capacity} {t("member.home.workshopsPage.registeredLabel", "registered")}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {detailWorkshop.isRegistered && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#E5E3FB] px-2.5 py-1 text-[11px] font-bold text-[#4338CA]">
+                    {t("member.home.workshopsPage.detail.registeredBadge", "You're registered")}
+                  </span>
+                )}
+                {detailWorkshop.isCheckedIn && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-ok/10 px-2.5 py-1 text-[11px] font-bold text-ok">
+                    <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    {t("member.home.workshopsPage.detail.checkedInBadge", "You're checked in")}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
